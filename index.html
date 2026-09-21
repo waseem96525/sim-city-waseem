@@ -11,24 +11,26 @@
             background: radial-gradient(circle at 30% 20%, #0f2027, #162b38, #08131a);
             font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
             color: #e3f2fd;
-            touch-action: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
         }
         #gameRoot {
             display: flex; flex-direction: column;
-            width: 100vw; height: 100vh;
+            width: 100%; height: 100%;
             padding: 6px; gap: 6px;
+            overflow: hidden;
         }
         /* ===== HEADER ===== */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            flex-wrap: wrap; gap: 6px;
+            flex-wrap: wrap; gap: 5px;
             background: linear-gradient(145deg, #1e3b4a, #0f2530);
-            border-radius: 14px; padding: 6px 10px;
+            border-radius: 14px; padding: 5px 8px;
             box-shadow: 0 4px 0 #060f15, inset 0 1px 3px #ffffff10;
             flex-shrink: 0;
         }
         h1 {
-            font-size: clamp(0.75rem, 2.2vw, 1.15rem);
+            font-size: clamp(0.7rem, 2.2vw, 1.1rem);
             font-weight: 700; letter-spacing: 1px;
             background: linear-gradient(to right, #7fd4ff, #38a8e0, #ffd700, #7fd4ff);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -37,7 +39,7 @@
         }
         .header-info { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
         .header-badge {
-            font-size: clamp(0.5rem, 1.3vw, 0.68rem);
+            font-size: clamp(0.5rem, 1.3vw, 0.65rem);
             background: linear-gradient(145deg, #1d4053, #0d2533);
             padding: 3px 8px; border-radius: 20px; color: #bbdef5;
             font-weight: 600; box-shadow: inset 0 1px 3px #ffffff22, 0 2px 0 #061520;
@@ -59,19 +61,14 @@
         .volume-slider {
             width: clamp(40px, 8vw, 60px); height: 5px; -webkit-appearance: none;
             background: #0d2533; border-radius: 3px; outline: none;
-            box-shadow: inset 0 1px 3px #000;
         }
         .volume-slider::-webkit-slider-thumb {
             -webkit-appearance: none; width: 12px; height: 12px;
             background: #4fa9d4; border-radius: 50%; cursor: pointer;
         }
-        .volume-slider::-moz-range-thumb {
-            width: 12px; height: 12px; background: #4fa9d4; border-radius: 50%;
-            cursor: pointer; border: none;
-        }
         /* ===== MAIN LAYOUT ===== */
         .main-layout {
-            flex: 1; display: flex; gap: 6px; min-height: 0;
+            flex: 1; display: flex; gap: 6px; min-height: 0; overflow: hidden;
         }
         .canvas-area {
             flex: 1; min-width: 0; position: relative;
@@ -102,21 +99,22 @@
             display: flex; align-items: center; justify-content: center;
             touch-action: manipulation;
         }
-        .zoom-btn:hover { background: #1d4053; }
         .zoom-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #060f15; }
         .zoom-level {
             background: rgba(11, 24, 32, 0.95); color: #8ed0f0;
             padding: 3px; text-align: center;
-            font-size: clamp(0.5rem, 1.1vw, 0.62rem);
+            font-size: clamp(0.5rem, 1.1vw, 0.6rem);
             border-radius: 8px; border: 1px solid #2a5e7a; font-weight: bold;
         }
-        /* ===== SIDEBAR ===== */
+        /* ===== SIDEBAR (DESKTOP: SCROLLABLE COLUMN) ===== */
         .sidebar {
             width: clamp(250px, 30vw, 380px);
             display: flex; flex-direction: column; gap: 6px;
             overflow-y: auto; overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
             padding-right: 3px;
             flex-shrink: 0;
+            touch-action: pan-y;
         }
         .sidebar::-webkit-scrollbar { width: 5px; }
         .sidebar::-webkit-scrollbar-track { background: #0a1720; border-radius: 3px; }
@@ -127,7 +125,7 @@
             border: 1px solid #173040; flex-shrink: 0;
         }
         .sidebar-section h3 {
-            margin: 0 0 5px 0; font-size: clamp(0.6rem, 1.3vw, 0.72rem);
+            margin: 0 0 5px 0; font-size: clamp(0.6rem, 1.3vw, 0.7rem);
             color: #8ed0f0; letter-spacing: 1.1px; text-transform: uppercase;
             display: flex; align-items: center; justify-content: space-between;
         }
@@ -143,7 +141,7 @@
             border: none; border-radius: 18px;
             padding: 5px 8px;
             font-weight: 600;
-            font-size: clamp(0.55rem, 1.15vw, 0.66rem);
+            font-size: clamp(0.55rem, 1.15vw, 0.65rem);
             color: #ddf4ff;
             box-shadow: 0 3px 0 #061520, inset 0 1px 2px #ffffff22;
             cursor: pointer; display: flex; align-items: center; gap: 3px;
@@ -170,9 +168,6 @@
             background: linear-gradient(145deg, #7a5a2a, #3a2a10);
             box-shadow: 0 3px 0 #1a0f08; color: #ffd970;
         }
-        .tool-btn.prestige-btn:not(:disabled) {
-            box-shadow: 0 0 0 2px #ffd970, 0 3px 0 #1a0f08;
-        }
         .stats {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px;
         }
@@ -182,19 +177,18 @@
             box-shadow: inset 0 1px 5px #00000088; border: 1px solid #1e4055;
         }
         .stat-label {
-            font-size: clamp(0.4rem, 0.9vw, 0.52rem);
+            font-size: clamp(0.4rem, 0.9vw, 0.5rem);
             color: #7fa8c0; text-transform: uppercase;
             letter-spacing: 0.3px; margin-bottom: 1px; text-align: center;
         }
         .stat-value {
             color: #e3f2fd; font-weight: 700;
-            font-size: clamp(0.6rem, 1.25vw, 0.78rem);
+            font-size: clamp(0.6rem, 1.25vw, 0.75rem);
             text-shadow: 0 0 6px #4fa9d4;
         }
         .stat-value.warning { color: #ff8a80; }
         .stat-value.good { color: #a5ff9e; }
         .stat-value.critical { color: #ff4444; animation: pulse 1s infinite; }
-        .stat-value.gold { color: #ffd970; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
         .disaster-btn {
             background: linear-gradient(145deg, #5a2a2a, #2a1010);
@@ -220,22 +214,16 @@
             background: linear-gradient(145deg, #1a3050, #0f1e30);
             border-radius: 10px; padding: 6px; margin-bottom: 4px;
             border-left: 3px solid #4fa9d4;
-            font-size: clamp(0.55rem, 1.15vw, 0.66rem); color: #c6e9ff;
-        }
-        .quest-item.complete {
-            border-left-color: #6fdf6f;
-            background: linear-gradient(145deg, #1a3a20, #0f2015);
-            opacity: 0.7;
+            font-size: clamp(0.55rem, 1.15vw, 0.65rem); color: #c6e9ff;
         }
         .quest-item .q-title {
             font-weight: 700; color: #7fd4ff;
-            font-size: clamp(0.58rem, 1.2vw, 0.7rem);
+            font-size: clamp(0.58rem, 1.2vw, 0.68rem);
             margin-bottom: 2px; display: flex; justify-content: space-between;
             gap: 4px;
         }
-        .quest-item.complete .q-title { color: #8fe08f; }
         .quest-item .q-desc {
-            color: #a0c0d5; font-size: clamp(0.5rem, 1vw, 0.6rem); margin-bottom: 3px;
+            color: #a0c0d5; font-size: clamp(0.5rem, 1vw, 0.58rem); margin-bottom: 3px;
         }
         .quest-progress {
             background: #0a1720; height: 5px; border-radius: 3px;
@@ -246,9 +234,6 @@
             background: linear-gradient(to right, #4fa9d4, #7fd4ff);
             transition: width 0.3s;
         }
-        .quest-item.complete .quest-progress-bar {
-            background: linear-gradient(to right, #6fdf6f, #a5ff9e);
-        }
         .achievement-grid {
             display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px;
         }
@@ -257,8 +242,8 @@
             background: #0a1720; border-radius: 8px;
             border: 1px solid #173040;
             display: flex; align-items: center; justify-content: center;
-            font-size: clamp(0.7rem, 1.6vw, 1rem);
-            position: relative; cursor: help;
+            font-size: clamp(0.7rem, 1.6vw, 0.95rem);
+            position: relative;
             transition: 0.2s;
         }
         .achievement.unlocked {
@@ -270,21 +255,9 @@
             opacity: 0.3;
             filter: grayscale(100%);
         }
-        .achievement .ach-tooltip {
-            display: none;
-            position: absolute;
-            bottom: 110%; left: 50%; transform: translateX(-50%);
-            background: #0b1820; color: #c6e9ff; padding: 5px 8px;
-            border-radius: 8px; border: 1px solid #2a5e7a;
-            font-size: clamp(0.5rem, 1vw, 0.6rem); white-space: nowrap;
-            box-shadow: 0 4px 12px #000;
-            z-index: 10;
-            pointer-events: none;
-        }
-        .achievement:hover .ach-tooltip { display: block; }
         .hint {
             text-align: center; color: #5f8296;
-            font-size: clamp(0.5rem, 1vw, 0.65rem);
+            font-size: clamp(0.5rem, 1vw, 0.62rem);
             letter-spacing: 0.3px;
             padding: 4px;
             flex-shrink: 0;
@@ -292,7 +265,8 @@
         .log-box {
             background: #061218; border-radius: 8px; padding: 5px;
             height: 60px; overflow-y: auto;
-            font-size: clamp(0.5rem, 1vw, 0.62rem);
+            -webkit-overflow-scrolling: touch;
+            font-size: clamp(0.5rem, 1vw, 0.6rem);
             color: #9fc5d9; border: 1px solid #173040;
             font-family: 'Courier New', monospace;
         }
@@ -307,7 +281,7 @@
         .time-btn, .speed-btn {
             flex: 1; background: #173040; border: none; border-radius: 8px;
             padding: 5px 2px; color: #c0e0f0;
-            font-size: clamp(0.55rem, 1.15vw, 0.65rem);
+            font-size: clamp(0.55rem, 1.15vw, 0.62rem);
             cursor: pointer; box-shadow: 0 2px 0 #061520; font-weight: 600;
             min-height: 26px;
             touch-action: manipulation;
@@ -316,7 +290,7 @@
         .speed-btn.active { background: #d0a040; color: white; box-shadow: 0 0 0 1px #ffe0a0, 0 2px 0 #061520; }
         .weather-badge {
             text-align: center; padding: 4px; border-radius: 8px;
-            font-size: clamp(0.55rem, 1.15vw, 0.7rem); font-weight: 600;
+            font-size: clamp(0.55rem, 1.15vw, 0.68rem); font-weight: 600;
             background: #102530; border: 1px solid #1e4055;
             color: #c6e9ff; margin-top: 5px;
         }
@@ -332,7 +306,7 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 20px #4fa9d4;
             font-weight: 600; z-index: 1000; opacity: 0; pointer-events: none;
             transition: opacity 0.3s, transform 0.3s;
-            font-size: clamp(0.65rem, 1.4vw, 0.82rem);
+            font-size: clamp(0.65rem, 1.4vw, 0.8rem);
             max-width: 90vw; text-align: center;
         }
         .notification-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -342,7 +316,7 @@
             color: #ffd970;
         }
         .music-info {
-            font-size: clamp(0.5rem, 1vw, 0.6rem);
+            font-size: clamp(0.5rem, 1vw, 0.58rem);
             color: #5f8296; text-align: center;
             padding: 2px;
             flex-shrink: 0;
@@ -350,7 +324,7 @@
         .selected-info {
             background: #102530; border-radius: 10px; padding: 6px;
             border: 1px solid #1e4055; text-align: center;
-            font-size: clamp(0.55rem, 1.15vw, 0.68rem); color: #c6e9ff; margin-top: 4px;
+            font-size: clamp(0.55rem, 1.15vw, 0.65rem); color: #c6e9ff; margin-top: 4px;
         }
         .selected-info .name { font-weight: 700; color: #7fd4ff; }
         .selected-info .level { color: #ffd970; font-weight: 700; }
@@ -361,17 +335,17 @@
         }
         .prestige-panel .prestige-title {
             color: #ffd970; font-weight: 700;
-            font-size: clamp(0.6rem, 1.3vw, 0.75rem);
+            font-size: clamp(0.6rem, 1.3vw, 0.72rem);
             letter-spacing: 1.2px; margin-bottom: 3px;
         }
         .prestige-panel .prestige-points {
             color: #ffd970;
-            font-size: clamp(0.85rem, 1.9vw, 1.1rem);
+            font-size: clamp(0.85rem, 1.9vw, 1.05rem);
             font-weight: 700; text-shadow: 0 0 10px #ffb700;
         }
         .prestige-panel .prestige-desc {
             color: #c5a570;
-            font-size: clamp(0.5rem, 1vw, 0.62rem);
+            font-size: clamp(0.5rem, 1vw, 0.6rem);
             margin: 3px 0;
         }
         .daily-reward {
@@ -390,13 +364,13 @@
         }
         .daily-reward .dr-title {
             color: #7fd4ff; font-weight: 700;
-            font-size: clamp(0.6rem, 1.2vw, 0.72rem);
+            font-size: clamp(0.6rem, 1.2vw, 0.7rem);
             margin-bottom: 3px; letter-spacing: 1px;
         }
         .daily-reward.ready .dr-title { color: #ffd970; }
         .daily-reward .dr-desc {
             color: #a0c0d5;
-            font-size: clamp(0.5rem, 1vw, 0.62rem);
+            font-size: clamp(0.5rem, 1vw, 0.6rem);
             margin-bottom: 5px;
         }
         .tab-buttons { display: flex; gap: 3px; margin-bottom: 5px; }
@@ -404,7 +378,7 @@
             flex: 1; padding: 5px; border-radius: 8px;
             background: #173040; border: none;
             color: #7fa8c0;
-            font-size: clamp(0.5rem, 1.05vw, 0.62rem);
+            font-size: clamp(0.5rem, 1.05vw, 0.6rem);
             cursor: pointer; font-weight: 600;
             box-shadow: 0 2px 0 #061520;
             min-height: 26px;
@@ -414,27 +388,30 @@
             background: #3f8db0; color: white;
             box-shadow: 0 0 0 1px #b3e4ff, 0 2px 0 #061520;
         }
+
         /* ===== RESPONSIVE LAYOUTS ===== */
-        /* Tablet — side by side but narrower sidebar */
         @media (max-width: 1100px) {
             .sidebar { width: clamp(230px, 32vw, 320px); }
         }
-        /* Small tablet / large phone landscape */
+        /* Tablet & phone: stack vertically, sidebar scrolls independently */
         @media (max-width: 850px) {
             #gameRoot { padding: 4px; gap: 4px; }
-            .main-layout { flex-direction: column; }
-            .canvas-area { flex: 1; }
+            .main-layout { flex-direction: column; overflow: hidden; }
+            .canvas-area { flex: 0 0 45vh; min-height: 200px; }
+            .canvas-wrapper { height: 100%; }
             .sidebar {
-                width: 100%; max-height: 42vh;
-                flex-direction: row; flex-wrap: wrap;
+                width: 100%;
+                flex: 1 1 auto;
+                max-height: none;
+                min-height: 0;
+                flex-direction: column;
                 overflow-y: auto;
-                align-items: flex-start;
-                gap: 5px;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+                touch-action: pan-y;
+                padding-bottom: 8px;
             }
-            .sidebar-section {
-                flex: 1 1 calc(50% - 5px);
-                min-width: 180px;
-            }
+            .sidebar-section { flex-shrink: 0; }
             .hint { display: none; }
         }
         /* Phone portrait */
@@ -443,36 +420,26 @@
             .header { padding: 4px 6px; gap: 4px; }
             .header-info { gap: 3px; }
             .header-badge { padding: 2px 6px; }
-            .canvas-area { min-height: 40vh; }
-            .sidebar {
-                max-height: 45vh;
-                flex-direction: column;
-            }
-            .sidebar-section {
-                flex: 0 0 auto;
-                min-width: 100%;
-                padding: 6px;
-            }
+            .canvas-area { flex: 0 0 42vh; min-height: 180px; }
+            .sidebar { padding: 3px; }
+            .sidebar-section { padding: 6px; border-radius: 12px; }
             .stats { grid-template-columns: repeat(4, 1fr); }
             .achievement-grid { grid-template-columns: repeat(6, 1fr); }
             .zoom-controls { top: 6px; right: 6px; }
-            .tool-btn { padding: 5px 6px; min-height: 28px; }
         }
         @media (max-width: 400px) {
             .stat-item { padding: 2px 1px; }
-            .achievement-grid { grid-template-columns: repeat(6, 1fr); }
             .header-info .header-badge:not(.gold) { display: none; }
+            .canvas-area { flex: 0 0 40vh; }
         }
         /* Landscape phone */
         @media (max-height: 500px) and (orientation: landscape) {
             .main-layout { flex-direction: row; }
-            .sidebar { width: 40vw; max-height: none; flex-direction: column; }
-            .sidebar-section { min-width: 100%; }
-            .canvas-area { flex: 1; }
+            .canvas-area { flex: 1; min-height: 0; }
+            .sidebar { width: 40vw; max-height: none; padding: 3px; }
             .stats { grid-template-columns: repeat(4, 1fr); }
             .log-box { height: 40px; }
         }
-        /* Hide hint on mobile */
         @media (hover: none) {
             .hint { display: none; }
         }
@@ -583,11 +550,11 @@
                     </div>
                     <div id="tabContentResearch" class="tab-content" style="display:none;">
                         <div class="toolbar" id="researchToolbar">
-                            <button class="tool-btn research-btn" data-research="hospital">🏥 Health 10RP</button>
-                            <button class="tool-btn research-btn" data-research="school">🎓 School 15RP</button>
-                            <button class="tool-btn research-btn" data-research="stadium">🏟️ Stadium 20RP</button>
-                            <button class="tool-btn research-btn" data-research="solar">☀️ Solar 25RP</button>
-                            <button class="tool-btn research-btn" data-research="subway">🚇 Subway 30RP</button>
+                            <button class="tool-btn research-btn" data-research="hospital">🏥 10RP</button>
+                            <button class="tool-btn research-btn" data-research="school">🎓 15RP</button>
+                            <button class="tool-btn research-btn" data-research="stadium">🏟️ 20RP</button>
+                            <button class="tool-btn research-btn" data-research="solar">☀️ 25RP</button>
+                            <button class="tool-btn research-btn" data-research="subway">🚇 30RP</button>
                         </div>
                     </div>
                     <div id="tabContentPolicies" class="tab-content" style="display:none;">
@@ -821,14 +788,13 @@
             let isPanning = false, panMoved = false;
             let panStartX = 0, panStartY = 0, camStartX = 0, camStartY = 0;
 
-            // Canvas physical size (CSS pixels × DPR)
             let canvasW = 800, canvasH = 600;
             let dpr = 1;
 
             function resizeCanvas() {
                 const rect = wrapper.getBoundingClientRect();
-                canvasW = rect.width;
-                canvasH = rect.height;
+                canvasW = Math.max(1, rect.width);
+                canvasH = Math.max(1, rect.height);
                 dpr = Math.min(window.devicePixelRatio || 1, 2);
                 canvas.width = Math.floor(canvasW * dpr);
                 canvas.height = Math.floor(canvasH * dpr);
@@ -837,8 +803,8 @@
                 ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             }
 
-            window.addEventListener('resize', () => { resizeCanvas(); });
-            window.addEventListener('orientationchange', () => { setTimeout(resizeCanvas, 100); });
+            window.addEventListener('resize', resizeCanvas);
+            window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 150));
 
             // ---------- GRID ----------
             const COLS = 24, ROWS = 24;
@@ -920,12 +886,13 @@
             }
 
             function refreshQuests() {
-                while (activeQuests.filter(q => !q.completed).length < 3) {
-                    const q = generateQuest();
-                    activeQuests.push(q);
-                    if (activeQuests.length > 6) {
-                        activeQuests = activeQuests.filter(x => !x.completed).concat(activeQuests.filter(x => x.completed).slice(-2));
-                    }
+                let guard = 0;
+                while (activeQuests.filter(q => !q.completed).length < 3 && guard < 20) {
+                    activeQuests.push(generateQuest());
+                    guard++;
+                }
+                if (activeQuests.length > 8) {
+                    activeQuests = activeQuests.filter(q => !q.completed).concat(activeQuests.filter(q => q.completed).slice(-3));
                 }
             }
 
@@ -944,7 +911,7 @@
                         money += q.reward;
                         cityXP += q.xp;
                         completedQuests++;
-                        log(`📜 Quest: ${q.title}! +$${q.reward}, +${q.xp}XP`, 'gold');
+                        log(`📜 ${q.title}! +$${q.reward}`, 'gold');
                         showToast(`📜 ${q.title}! +$${q.reward}`, 3000, true);
                         AudioEngine.playSFX('questComplete');
                     }
@@ -996,7 +963,7 @@
             function doPrestige() {
                 if (!canPrestige()) return;
                 const gain = getPrestigeGain();
-                if (!confirm(`Prestige Reset?\n\nGain ${gain} Prestige Points.\nCity resets but you keep achievements & level.\n\n+${gain * 2}% income bonus forever!\n\nContinue?`)) return;
+                if (!confirm(`Prestige Reset?\n\nGain ${gain} Prestige Points.\nCity resets but achievements remain.\n\n+${gain * 2}% income bonus forever!\n\nContinue?`)) return;
                 prestigePoints += gain;
                 prestigeCount++;
                 money = 8000 + prestigePoints * 100;
@@ -1195,13 +1162,12 @@
                     const u = unlockedAchievements[key];
                     return `<div class="achievement ${u ? 'unlocked' : 'locked'}" title="${a.name}: ${a.desc}">
                         ${a.icon}
-                        <div class="ach-tooltip">${a.name}: ${a.desc}</div>
                     </div>`;
                 }).join('');
                 document.getElementById('achCount').textContent = `${Object.keys(unlockedAchievements).length}/${Object.keys(ACHIEVEMENTS).length}`;
             }
 
-            // ---------- AGENTS (simplified for perf) ----------
+            // ---------- AGENTS ----------
             function findRoadCells() {
                 const roads = [];
                 for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++)
@@ -1261,9 +1227,11 @@
 
             function updateAgents(dt) {
                 const targetCount = Math.min(MAX_AGENTS, Math.floor(population / 3) + Math.floor(jobs / 5) + 5);
-                while (agents.length < targetCount) {
+                let guard = 0;
+                while (agents.length < targetCount && guard < 10) {
                     const before = agents.length;
                     spawnAgent();
+                    guard++;
                     if (agents.length === before) break;
                 }
                 while (agents.length > targetCount + 8) agents.pop();
@@ -1391,7 +1359,6 @@
                 el.className = 'stat-value' + (cls ? ' ' + cls : '');
             }
 
-            // ---------- COORDINATE HELPERS ----------
             function isoToWorld(col, row) {
                 return {
                     x: BASE_X + (col - row) * (TILE_W / 2),
@@ -1401,24 +1368,13 @@
 
             function getCanvasMousePos(clientX, clientY) {
                 const rect = canvas.getBoundingClientRect();
-                return {
-                    x: (clientX - rect.left),
-                    y: (clientY - rect.top)
-                };
+                return { x: clientX - rect.left, y: clientY - rect.top };
             }
 
             function screenToWorld(sx, sy) {
-                // Canvas CSS pixel to world coordinate
                 return {
                     x: (sx - canvasW / 2) / zoom + camX,
                     y: (sy - canvasH / 2) / zoom + camY
-                };
-            }
-
-            function worldToScreen(wx, wy) {
-                return {
-                    x: (wx - camX) * zoom + canvasW / 2,
-                    y: (wy - camY) * zoom + canvasH / 2
                 };
             }
 
@@ -1429,7 +1385,6 @@
                 return { col: Math.round((a + b) / 2), row: Math.round((b - a) / 2) };
             }
 
-            // ---------- DRAWING ----------
             function drawTileWorld(wx, wy, fillTop, fillLeft, fillRight, strokeColor) {
                 const h = 2;
                 ctx.beginPath();
@@ -1706,7 +1661,6 @@
                     ctx.fillStyle = '#f0f8ff'; ctx.beginPath(); ctx.arc(canvasW - 80, 60, 14, 0, Math.PI * 2); ctx.fill();
                 }
 
-                // ---------- WORLD TRANSFORM ----------
                 ctx.save();
                 ctx.translate(canvasW / 2, canvasH / 2);
                 ctx.scale(zoom, zoom);
@@ -1714,14 +1668,12 @@
 
                 const isNight = currentTime === 'night';
 
-                // Terrain
                 for (let r = 0; r < ROWS; r++)
                     for (let c = 0; c < COLS; c++) {
                         const w = isoToWorld(c, r);
                         drawTerrain(w.x, w.y, terrain[r][c], isNight);
                     }
 
-                // Empty grid overlay
                 for (let r = 0; r < ROWS; r++)
                     for (let c = 0; c < COLS; c++) {
                         if (terrain[r][c] === 'water') continue;
@@ -1736,7 +1688,6 @@
                         }
                     }
 
-                // Buildings (sorted by depth)
                 const cells = [];
                 for (let r = 0; r < ROWS; r++)
                     for (let c = 0; c < COLS; c++)
@@ -1747,7 +1698,6 @@
                     drawBuildingWorld(cell.c, cell.r, b.type, b.level);
                 }
 
-                // Agents
                 const sortedAgents = [...agents].sort((a, b) => {
                     const ay = a.homeRoad.r + a.homeRoad.c + (a.targetBuilding.r + a.targetBuilding.c - a.homeRoad.r - a.homeRoad.c) * a.progress;
                     const by = b.homeRoad.r + b.homeRoad.c + (b.targetBuilding.r + b.targetBuilding.c - b.homeRoad.r - b.homeRoad.c) * b.progress;
@@ -1802,7 +1752,6 @@
                     }
                 }
 
-                // Hover highlight
                 if (hoverCol !== null && hoverRow !== null && hoverCol >= 0 && hoverCol < COLS && hoverRow >= 0 && hoverRow < ROWS) {
                     const w = isoToWorld(hoverCol, hoverRow);
                     const canBuild = terrain[hoverRow][hoverCol] !== 'water';
@@ -1819,7 +1768,6 @@
 
                 ctx.restore();
 
-                // Overlays
                 if (currentTime === 'night') { ctx.fillStyle = 'rgba(0,10,30,0.35)'; ctx.fillRect(0, 0, canvasW, canvasH); }
                 else if (currentTime === 'dusk') { ctx.fillStyle = 'rgba(120,40,20,0.18)'; ctx.fillRect(0, 0, canvasW, canvasH); }
                 else if (currentTime === 'dawn') { ctx.fillStyle = 'rgba(60,20,80,0.18)'; ctx.fillRect(0, 0, canvasW, canvasH); }
@@ -1862,7 +1810,6 @@
                 demolishBtn.disabled = false;
             }
 
-            // ---------- INPUT HANDLING ----------
             function handleClick(clientX, clientY) {
                 const p = getCanvasMousePos(clientX, clientY);
                 const { col, row } = screenToGrid(p.x, p.y);
@@ -1940,7 +1887,7 @@
                 updateSelectedInfo();
             }
 
-            // Mouse events
+            // ---------- MOUSE EVENTS ----------
             canvas.addEventListener('mousedown', e => {
                 if (e.button === 0) {
                     isPanning = true; panMoved = false;
@@ -1978,7 +1925,6 @@
                 updateZoomDisplay();
             });
 
-            // ---------- FIXED WHEEL ZOOM ----------
             canvas.addEventListener('wheel', e => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1994,19 +1940,19 @@
                 updateZoomDisplay();
             }, { passive: false });
 
-            // ---------- TOUCH HANDLING (proper pinch zoom) ----------
+            // ---------- TOUCH EVENTS (with proper scroll control) ----------
+            // Key: only preventDefault inside the canvas, not on the sidebar.
             let touchState = {
-                mode: 'none', // 'none', 'pan', 'pinch'
+                mode: 'none',
                 startDist: 0, startZoom: 1,
-                startMidX: 0, startMidY: 0,
+                startX: 0, startY: 0,
                 startCamX: 0, startCamY: 0,
                 startWorldMid: { x: 0, y: 0 },
-                moved: false,
-                startX: 0, startY: 0
+                startMidX: 0, startMidY: 0,
+                moved: false
             };
 
             canvas.addEventListener('touchstart', e => {
-                e.preventDefault();
                 if (e.touches.length === 1) {
                     const t = e.touches[0];
                     const p = getCanvasMousePos(t.clientX, t.clientY);
@@ -2017,6 +1963,7 @@
                     touchState.startCamY = camY;
                     touchState.moved = false;
                 } else if (e.touches.length === 2) {
+                    e.preventDefault();
                     const t1 = e.touches[0], t2 = e.touches[1];
                     const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
                     const midClientX = (t1.clientX + t2.clientX) / 2;
@@ -2027,24 +1974,24 @@
                     touchState.startZoom = zoom;
                     touchState.startMidX = p.x;
                     touchState.startMidY = p.y;
-                    touchState.startCamX = camX;
-                    touchState.startCamY = camY;
                     touchState.startWorldMid = screenToWorld(p.x, p.y);
                     touchState.moved = true;
                 }
             }, { passive: false });
 
             canvas.addEventListener('touchmove', e => {
-                e.preventDefault();
                 if (touchState.mode === 'pan' && e.touches.length === 1) {
                     const t = e.touches[0];
                     const p = getCanvasMousePos(t.clientX, t.clientY);
                     const dx = p.x - touchState.startX;
                     const dy = p.y - touchState.startY;
                     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) touchState.moved = true;
+                    // Only preventDefault once we're actually panning (avoid blocking page scroll from canvas edge)
+                    if (touchState.moved) e.preventDefault();
                     camX = touchState.startCamX - dx / zoom;
                     camY = touchState.startCamY - dy / zoom;
                 } else if (touchState.mode === 'pinch' && e.touches.length === 2) {
+                    e.preventDefault();
                     const t1 = e.touches[0], t2 = e.touches[1];
                     const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
                     const midClientX = (t1.clientX + t2.clientX) / 2;
@@ -2053,7 +2000,6 @@
 
                     const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, touchState.startZoom * dist / touchState.startDist));
                     zoom = newZoom;
-                    // Keep startWorldMid under the current pinch midpoint
                     const newWorldMid = screenToWorld(p.x, p.y);
                     camX += touchState.startWorldMid.x - newWorldMid.x;
                     camY += touchState.startWorldMid.y - newWorldMid.y;
@@ -2062,10 +2008,9 @@
             }, { passive: false });
 
             canvas.addEventListener('touchend', e => {
-                e.preventDefault();
-                if (touchState.mode === 'pan' && !touchState.moved) {
-                    // Tap → build
-                    handleClick(touchState.startX + canvas.getBoundingClientRect().left, touchState.startY + canvas.getBoundingClientRect().top);
+                if (touchState.mode === 'pan' && !touchState.moved && e.changedTouches.length === 1) {
+                    const t = e.changedTouches[0];
+                    handleClick(t.clientX, t.clientY);
                 }
                 if (e.touches.length === 0) {
                     touchState.mode = 'none';
@@ -2076,7 +2021,7 @@
             canvas.addEventListener('touchcancel', e => {
                 touchState.mode = 'none';
                 touchState.moved = false;
-            }, { passive: true });
+            });
 
             function updateZoomDisplay() {
                 document.getElementById('zoomLevel').textContent = zoom.toFixed(1) + 'x';
@@ -2255,7 +2200,6 @@
                 AudioEngine.playSFX('click');
             }
 
-            // ---------- SETUP ----------
             function setupToolButtons() {
                 const btns = document.querySelectorAll('.tool-btn[data-tool]');
                 btns.forEach(btn => {
