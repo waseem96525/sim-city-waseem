@@ -2,221 +2,323 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Waseem Sim City · Ultimate City Builder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Waseem Sim City · Empire Edition</title>
     <style>
-        * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; }
-        body {
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
             background: radial-gradient(circle at 30% 20%, #0f2027, #162b38, #08131a);
             font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; padding: 10px; overflow: hidden;
+            color: #e3f2fd;
+            touch-action: none;
         }
-        .game-container {
-            background: linear-gradient(145deg, #1e3b4a, #0f2530);
-            padding: 16px; border-radius: 38px;
-            box-shadow: 0 40px 60px rgba(0,0,0,0.9), inset 0 1px 4px rgba(255,255,255,0.08), 0 0 0 1px #2d5c72;
-            max-width: 1600px; width: 100%;
+        #gameRoot {
+            display: flex; flex-direction: column;
+            width: 100vw; height: 100vh;
+            padding: 6px; gap: 6px;
         }
-        .game-panel {
-            background: #0b1820; border-radius: 26px; padding: 14px;
-            box-shadow: inset 0 0 25px #00000088, 0 12px 0 #060f15;
-        }
+        /* ===== HEADER ===== */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
+            flex-wrap: wrap; gap: 6px;
+            background: linear-gradient(145deg, #1e3b4a, #0f2530);
+            border-radius: 14px; padding: 6px 10px;
+            box-shadow: 0 4px 0 #060f15, inset 0 1px 3px #ffffff10;
+            flex-shrink: 0;
         }
         h1 {
-            font-size: 1.5rem; font-weight: 700; letter-spacing: 2px;
+            font-size: clamp(0.75rem, 2.2vw, 1.15rem);
+            font-weight: 700; letter-spacing: 1px;
             background: linear-gradient(to right, #7fd4ff, #38a8e0, #ffd700, #7fd4ff);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            white-space: nowrap;
         }
-        .header-info { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .header-info { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
         .header-badge {
-            font-size: 0.7rem;
+            font-size: clamp(0.5rem, 1.3vw, 0.68rem);
             background: linear-gradient(145deg, #1d4053, #0d2533);
-            padding: 5px 12px; border-radius: 30px; color: #bbdef5;
-            font-weight: 600; box-shadow: inset 0 1px 4px #ffffff22, 0 3px 0 #061520;
-            letter-spacing: 0.5px;
+            padding: 3px 8px; border-radius: 20px; color: #bbdef5;
+            font-weight: 600; box-shadow: inset 0 1px 3px #ffffff22, 0 2px 0 #061520;
+            white-space: nowrap;
         }
         .header-badge.hot { color: #ffb5b5; }
         .header-badge.cold { color: #b5dfff; }
-        .sound-controls { display: flex; gap: 5px; align-items: center; }
+        .header-badge.gold { color: #ffd970; }
+        .sound-controls { display: flex; gap: 3px; align-items: center; }
         .sound-btn {
             background: linear-gradient(145deg, #1d4053, #0d2533);
-            border: none; border-radius: 50%; width: 34px; height: 34px;
-            font-size: 1rem; cursor: pointer;
-            box-shadow: 0 4px 0 #061520, inset 0 1px 2px #ffffff22;
+            border: none; border-radius: 50%;
+            width: clamp(26px, 3.2vw, 32px); height: clamp(26px, 3.2vw, 32px);
+            font-size: clamp(0.7rem, 1.6vw, 0.9rem); cursor: pointer;
+            box-shadow: 0 2px 0 #061520, inset 0 1px 2px #ffffff22;
             color: #c6e9ff; display: flex; align-items: center; justify-content: center;
         }
-        .sound-btn:hover { background: #1d5a7a; }
         .sound-btn.muted { opacity: 0.5; }
         .volume-slider {
-            width: 70px; height: 6px; -webkit-appearance: none;
+            width: clamp(40px, 8vw, 60px); height: 5px; -webkit-appearance: none;
             background: #0d2533; border-radius: 3px; outline: none;
             box-shadow: inset 0 1px 3px #000;
         }
         .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 14px; height: 14px;
+            -webkit-appearance: none; width: 12px; height: 12px;
             background: #4fa9d4; border-radius: 50%; cursor: pointer;
-            box-shadow: 0 0 8px #4fa9d4;
         }
         .volume-slider::-moz-range-thumb {
-            width: 14px; height: 14px;
-            background: #4fa9d4; border-radius: 50%; cursor: pointer;
-            border: none; box-shadow: 0 0 8px #4fa9d4;
+            width: 12px; height: 12px; background: #4fa9d4; border-radius: 50%;
+            cursor: pointer; border: none;
         }
-        .main-layout { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-        .canvas-area { flex: 2; min-width: 340px; position: relative; }
+        /* ===== MAIN LAYOUT ===== */
+        .main-layout {
+            flex: 1; display: flex; gap: 6px; min-height: 0;
+        }
+        .canvas-area {
+            flex: 1; min-width: 0; position: relative;
+            display: flex; flex-direction: column;
+        }
+        .canvas-wrapper {
+            flex: 1; position: relative; min-height: 0;
+            border-radius: 14px; overflow: hidden;
+            box-shadow: 0 6px 0 #061016, 0 0 0 2px #2a5e7a;
+            background: #0a1a24;
+        }
         canvas {
-            display: block; margin: 0 auto; border-radius: 18px;
-            box-shadow: 0 14px 0 #061016, 0 0 0 2px #2a5e7a, 0 0 40px #1f4b60;
-            background: #0a1a24; cursor: grab; width: 100%; height: auto;
-            max-width: 950px; touch-action: none;
+            display: block; width: 100%; height: 100%;
+            cursor: grab; touch-action: none;
         }
         canvas:active { cursor: grabbing; }
         .zoom-controls {
-            position: absolute; top: 12px; right: 12px;
+            position: absolute; top: 8px; right: 8px;
             display: flex; flex-direction: column; gap: 4px; z-index: 5;
         }
         .zoom-btn {
-            width: 36px; height: 36px; border-radius: 10px;
+            width: clamp(30px, 3.6vw, 38px); height: clamp(30px, 3.6vw, 38px);
+            border-radius: 10px;
             background: rgba(11, 24, 32, 0.95); border: 1px solid #2a5e7a;
-            color: #c6e9ff; font-size: 1.1rem; font-weight: bold; cursor: pointer;
-            box-shadow: 0 4px 0 #060f15, inset 0 1px 2px #ffffff22;
+            color: #c6e9ff; font-size: clamp(0.85rem, 1.8vw, 1.05rem);
+            font-weight: bold; cursor: pointer;
+            box-shadow: 0 3px 0 #060f15, inset 0 1px 2px #ffffff22;
             display: flex; align-items: center; justify-content: center;
-            transition: 0.1s;
+            touch-action: manipulation;
         }
-        .zoom-btn:hover { background: #1d4053; box-shadow: 0 0 12px #4fa9d4; }
-        .zoom-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #060f15; }
+        .zoom-btn:hover { background: #1d4053; }
+        .zoom-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #060f15; }
         .zoom-level {
             background: rgba(11, 24, 32, 0.95); color: #8ed0f0;
-            padding: 4px; text-align: center; font-size: 0.65rem;
+            padding: 3px; text-align: center;
+            font-size: clamp(0.5rem, 1.1vw, 0.62rem);
             border-radius: 8px; border: 1px solid #2a5e7a; font-weight: bold;
         }
+        /* ===== SIDEBAR ===== */
         .sidebar {
-            flex: 1; min-width: 320px; max-width: 380px;
-            display: flex; flex-direction: column; gap: 10px;
-            max-height: 660px; overflow-y: auto; padding-right: 4px;
+            width: clamp(250px, 30vw, 380px);
+            display: flex; flex-direction: column; gap: 6px;
+            overflow-y: auto; overflow-x: hidden;
+            padding-right: 3px;
+            flex-shrink: 0;
         }
         .sidebar::-webkit-scrollbar { width: 5px; }
         .sidebar::-webkit-scrollbar-track { background: #0a1720; border-radius: 3px; }
         .sidebar::-webkit-scrollbar-thumb { background: #2a5e7a; border-radius: 3px; }
         .sidebar-section {
-            background: #0a1720; border-radius: 18px; padding: 11px;
-            box-shadow: inset 0 2px 8px #00000088, 0 5px 0 #061016;
+            background: #0a1720; border-radius: 14px; padding: 8px;
+            box-shadow: inset 0 2px 6px #00000088, 0 4px 0 #061016;
             border: 1px solid #173040; flex-shrink: 0;
         }
         .sidebar-section h3 {
-            margin: 0 0 8px 0; font-size: 0.78rem; color: #8ed0f0;
-            letter-spacing: 1.4px; text-transform: uppercase;
+            margin: 0 0 5px 0; font-size: clamp(0.6rem, 1.3vw, 0.72rem);
+            color: #8ed0f0; letter-spacing: 1.1px; text-transform: uppercase;
             display: flex; align-items: center; justify-content: space-between;
         }
         .sidebar-section h3 .badge {
-            font-size: 0.6rem; background: #1d4053; padding: 2px 8px;
-            border-radius: 10px; color: #7fd4ff; text-transform: none; letter-spacing: 0;
+            font-size: clamp(0.5rem, 1vw, 0.58rem);
+            background: #1d4053; padding: 2px 6px;
+            border-radius: 10px; color: #7fd4ff;
+            text-transform: none; letter-spacing: 0;
         }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 5px; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 3px; }
         .tool-btn {
             background: linear-gradient(145deg, #1d4053, #0d2533);
-            border: none; border-radius: 26px; padding: 7px 10px;
-            font-weight: 600; font-size: 0.68rem; color: #ddf4ff;
-            box-shadow: 0 4px 0 #061520, 0 2px 8px #00000066, inset 0 1px 2px #ffffff22;
-            cursor: pointer; display: flex; align-items: center; gap: 4px;
+            border: none; border-radius: 18px;
+            padding: 5px 8px;
+            font-weight: 600;
+            font-size: clamp(0.55rem, 1.15vw, 0.66rem);
+            color: #ddf4ff;
+            box-shadow: 0 3px 0 #061520, inset 0 1px 2px #ffffff22;
+            cursor: pointer; display: flex; align-items: center; gap: 3px;
             flex: 1 0 auto; justify-content: center; white-space: nowrap;
+            touch-action: manipulation;
+            min-height: 26px;
         }
-        .tool-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #061520; }
+        .tool-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #061520; }
         .tool-btn.active {
             background: linear-gradient(145deg, #3f8db0, #1d5a7a);
-            box-shadow: 0 0 0 2px #b3e4ff, 0 4px 0 #061520, 0 0 20px #4fa9d4;
-            color: white; text-shadow: 0 1px 3px #000;
+            box-shadow: 0 0 0 2px #b3e4ff, 0 3px 0 #061520;
+            color: white;
         }
-        .tool-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: 0 4px 0 #061520; }
+        .tool-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: 0 3px 0 #061520; }
         .tool-btn.reset-btn {
             background: linear-gradient(145deg, #5a3a2b, #2e1e12);
-            box-shadow: 0 4px 0 #1a0f08, 0 2px 8px #00000066; color: #ffdbb5;
+            box-shadow: 0 3px 0 #1a0f08; color: #ffdbb5;
         }
         .tool-btn.upgrade-btn {
             background: linear-gradient(145deg, #5a4a8a, #2a1a4a);
-            box-shadow: 0 4px 0 #1a0a2a, 0 2px 8px #00000066; color: #e5c5ff;
+            box-shadow: 0 3px 0 #1a0a2a; color: #e5c5ff;
         }
-        .tool-btn.upgrade-btn:not(:disabled) {
-            box-shadow: 0 0 0 2px #c5a5ff, 0 4px 0 #1a0a2a, 0 0 15px #a56fff;
+        .tool-btn.prestige-btn {
+            background: linear-gradient(145deg, #7a5a2a, #3a2a10);
+            box-shadow: 0 3px 0 #1a0f08; color: #ffd970;
+        }
+        .tool-btn.prestige-btn:not(:disabled) {
+            box-shadow: 0 0 0 2px #ffd970, 0 3px 0 #1a0f08;
         }
         .stats {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px;
         }
         .stat-item {
             display: flex; flex-direction: column; align-items: center;
-            background: #102530; padding: 5px 2px; border-radius: 11px;
-            box-shadow: inset 0 1px 6px #00000088; border: 1px solid #1e4055;
+            background: #102530; padding: 3px 2px; border-radius: 8px;
+            box-shadow: inset 0 1px 5px #00000088; border: 1px solid #1e4055;
         }
         .stat-label {
-            font-size: 0.55rem; color: #7fa8c0; text-transform: uppercase;
-            letter-spacing: 0.6px; margin-bottom: 1px;
+            font-size: clamp(0.4rem, 0.9vw, 0.52rem);
+            color: #7fa8c0; text-transform: uppercase;
+            letter-spacing: 0.3px; margin-bottom: 1px; text-align: center;
         }
         .stat-value {
-            color: #e3f2fd; font-weight: 700; font-size: 0.85rem;
-            text-shadow: 0 0 8px #4fa9d4;
+            color: #e3f2fd; font-weight: 700;
+            font-size: clamp(0.6rem, 1.25vw, 0.78rem);
+            text-shadow: 0 0 6px #4fa9d4;
         }
-        .stat-value.warning { color: #ff8a80; text-shadow: 0 0 10px #ff5252; }
-        .stat-value.good { color: #a5ff9e; text-shadow: 0 0 10px #4caf50; }
-        .stat-value.critical { color: #ff4444; text-shadow: 0 0 12px #ff0000; animation: pulse 1s infinite; }
+        .stat-value.warning { color: #ff8a80; }
+        .stat-value.good { color: #a5ff9e; }
+        .stat-value.critical { color: #ff4444; animation: pulse 1s infinite; }
+        .stat-value.gold { color: #ffd970; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
         .disaster-btn {
             background: linear-gradient(145deg, #5a2a2a, #2a1010);
-            box-shadow: 0 4px 0 #1a0808, 0 2px 8px #00000066; color: #ffb5b5;
+            box-shadow: 0 3px 0 #1a0808; color: #ffb5b5;
         }
         .policy-btn {
             background: linear-gradient(145deg, #2a4a2a, #153015);
-            box-shadow: 0 4px 0 #0a1f0a, 0 2px 8px #00000066; color: #b5ffb5;
+            box-shadow: 0 3px 0 #0a1f0a; color: #b5ffb5;
         }
         .policy-btn.active {
             background: linear-gradient(145deg, #4a8a4a, #276a27);
-            box-shadow: 0 0 0 2px #b5ffb5, 0 4px 0 #061520, 0 0 18px #6fdf6f;
+            box-shadow: 0 0 0 2px #b5ffb5, 0 3px 0 #061520;
         }
         .research-btn {
             background: linear-gradient(145deg, #3a2a5a, #1e1530);
-            box-shadow: 0 4px 0 #0f0a1e, 0 2px 8px #00000066; color: #d5b5ff;
+            box-shadow: 0 3px 0 #0f0a1e; color: #d5b5ff;
         }
         .research-btn.unlocked {
             background: linear-gradient(145deg, #6a4a9a, #3e2a6a);
-            box-shadow: 0 0 0 2px #d5b5ff, 0 4px 0 #061520, 0 0 18px #a56fff;
+            box-shadow: 0 0 0 2px #d5b5ff, 0 3px 0 #061520;
         }
+        .quest-item {
+            background: linear-gradient(145deg, #1a3050, #0f1e30);
+            border-radius: 10px; padding: 6px; margin-bottom: 4px;
+            border-left: 3px solid #4fa9d4;
+            font-size: clamp(0.55rem, 1.15vw, 0.66rem); color: #c6e9ff;
+        }
+        .quest-item.complete {
+            border-left-color: #6fdf6f;
+            background: linear-gradient(145deg, #1a3a20, #0f2015);
+            opacity: 0.7;
+        }
+        .quest-item .q-title {
+            font-weight: 700; color: #7fd4ff;
+            font-size: clamp(0.58rem, 1.2vw, 0.7rem);
+            margin-bottom: 2px; display: flex; justify-content: space-between;
+            gap: 4px;
+        }
+        .quest-item.complete .q-title { color: #8fe08f; }
+        .quest-item .q-desc {
+            color: #a0c0d5; font-size: clamp(0.5rem, 1vw, 0.6rem); margin-bottom: 3px;
+        }
+        .quest-progress {
+            background: #0a1720; height: 5px; border-radius: 3px;
+            overflow: hidden; margin-top: 3px;
+        }
+        .quest-progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #4fa9d4, #7fd4ff);
+            transition: width 0.3s;
+        }
+        .quest-item.complete .quest-progress-bar {
+            background: linear-gradient(to right, #6fdf6f, #a5ff9e);
+        }
+        .achievement-grid {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px;
+        }
+        .achievement {
+            aspect-ratio: 1;
+            background: #0a1720; border-radius: 8px;
+            border: 1px solid #173040;
+            display: flex; align-items: center; justify-content: center;
+            font-size: clamp(0.7rem, 1.6vw, 1rem);
+            position: relative; cursor: help;
+            transition: 0.2s;
+        }
+        .achievement.unlocked {
+            background: linear-gradient(145deg, #3a2a10, #1a1508);
+            border-color: #ffd970;
+            box-shadow: 0 0 8px #ffb70088;
+        }
+        .achievement.locked {
+            opacity: 0.3;
+            filter: grayscale(100%);
+        }
+        .achievement .ach-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 110%; left: 50%; transform: translateX(-50%);
+            background: #0b1820; color: #c6e9ff; padding: 5px 8px;
+            border-radius: 8px; border: 1px solid #2a5e7a;
+            font-size: clamp(0.5rem, 1vw, 0.6rem); white-space: nowrap;
+            box-shadow: 0 4px 12px #000;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .achievement:hover .ach-tooltip { display: block; }
         .hint {
-            text-align: center; color: #5f8296; margin-top: 10px;
-            font-size: 0.72rem; letter-spacing: 0.4px;
-        }
-        .hint kbd {
-            background: #1d4053; padding: 2px 5px; border-radius: 3px;
-            color: #c6e9ff; font-family: monospace; border: 1px solid #2a5e7a;
-            font-size: 0.65rem;
+            text-align: center; color: #5f8296;
+            font-size: clamp(0.5rem, 1vw, 0.65rem);
+            letter-spacing: 0.3px;
+            padding: 4px;
+            flex-shrink: 0;
         }
         .log-box {
-            background: #061218; border-radius: 10px; padding: 7px;
-            max-height: 70px; overflow-y: auto; font-size: 0.65rem;
+            background: #061218; border-radius: 8px; padding: 5px;
+            height: 60px; overflow-y: auto;
+            font-size: clamp(0.5rem, 1vw, 0.62rem);
             color: #9fc5d9; border: 1px solid #173040;
             font-family: 'Courier New', monospace;
         }
-        .log-entry { padding: 2px 0; border-bottom: 1px solid #0d1f28; }
+        .log-entry { padding: 1px 0; border-bottom: 1px solid #0d1f28; }
         .log-entry.good { color: #8fe08f; }
         .log-entry.bad { color: #ff9e9e; }
         .log-entry.info { color: #9fd9ff; }
         .log-entry.warn { color: #ffd970; }
-        .time-toggle, .speed-toggle { display: flex; gap: 4px; }
-        .speed-toggle { margin-top: 5px; }
+        .log-entry.gold { color: #ffd970; font-weight: 700; }
+        .time-toggle, .speed-toggle { display: flex; gap: 3px; }
+        .speed-toggle { margin-top: 4px; }
         .time-btn, .speed-btn {
-            flex: 1; background: #173040; border: none; border-radius: 9px;
-            padding: 5px 3px; color: #c0e0f0; font-size: 0.65rem;
-            cursor: pointer; box-shadow: 0 3px 0 #061520; font-weight: 600;
+            flex: 1; background: #173040; border: none; border-radius: 8px;
+            padding: 5px 2px; color: #c0e0f0;
+            font-size: clamp(0.55rem, 1.15vw, 0.65rem);
+            cursor: pointer; box-shadow: 0 2px 0 #061520; font-weight: 600;
+            min-height: 26px;
+            touch-action: manipulation;
         }
-        .time-btn.active { background: #3f8db0; color: white; box-shadow: 0 0 0 1px #b3e4ff, 0 3px 0 #061520; }
-        .speed-btn.active { background: #d0a040; color: white; box-shadow: 0 0 0 1px #ffe0a0, 0 3px 0 #061520; }
+        .time-btn.active { background: #3f8db0; color: white; box-shadow: 0 0 0 1px #b3e4ff, 0 2px 0 #061520; }
+        .speed-btn.active { background: #d0a040; color: white; box-shadow: 0 0 0 1px #ffe0a0, 0 2px 0 #061520; }
         .weather-badge {
-            text-align: center; padding: 5px; border-radius: 10px;
-            font-size: 0.75rem; font-weight: 600;
+            text-align: center; padding: 4px; border-radius: 8px;
+            font-size: clamp(0.55rem, 1.15vw, 0.7rem); font-weight: 600;
             background: #102530; border: 1px solid #1e4055;
-            color: #c6e9ff; margin-top: 6px;
+            color: #c6e9ff; margin-top: 5px;
         }
         .weather-badge.storm { background: #2a1a3a; border-color: #6a4a8a; color: #d5b5ff; }
         .weather-badge.rain { background: #1a2535; border-color: #3a5570; color: #b5d5ff; }
@@ -224,114 +326,281 @@
         .weather-badge.snow { background: #1a2a35; border-color: #4a6a80; color: #d5e5ff; }
         .weather-badge.fog { background: #1a2530; border-color: #3a4a5a; color: #b5c5d5; }
         .notification-toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            position: fixed; top: 10px; left: 50%; transform: translateX(-50%) translateY(-20px);
             background: rgba(15, 28, 36, 0.98); color: #c6e9ff;
-            padding: 10px 24px; border-radius: 30px; border: 1px solid #2a5e7a;
+            padding: 8px 18px; border-radius: 25px; border: 1px solid #2a5e7a;
             box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 20px #4fa9d4;
             font-weight: 600; z-index: 1000; opacity: 0; pointer-events: none;
-            transition: opacity 0.3s, transform 0.3s; font-size: 0.85rem;
+            transition: opacity 0.3s, transform 0.3s;
+            font-size: clamp(0.65rem, 1.4vw, 0.82rem);
+            max-width: 90vw; text-align: center;
         }
         .notification-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .notification-toast.gold {
+            border-color: #ffd970;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px #ffb700;
+            color: #ffd970;
+        }
         .music-info {
-            font-size: 0.6rem; color: #5f8296; text-align: center;
-            margin-top: 3px; letter-spacing: 0.5px;
+            font-size: clamp(0.5rem, 1vw, 0.6rem);
+            color: #5f8296; text-align: center;
+            padding: 2px;
+            flex-shrink: 0;
         }
         .selected-info {
-            background: #102530; border-radius: 12px; padding: 8px;
+            background: #102530; border-radius: 10px; padding: 6px;
             border: 1px solid #1e4055; text-align: center;
-            font-size: 0.72rem; color: #c6e9ff; margin-top: 6px;
+            font-size: clamp(0.55rem, 1.15vw, 0.68rem); color: #c6e9ff; margin-top: 4px;
         }
         .selected-info .name { font-weight: 700; color: #7fd4ff; }
         .selected-info .level { color: #ffd970; font-weight: 700; }
+        .prestige-panel {
+            background: linear-gradient(145deg, #3a2a10, #1a1508);
+            border: 1px solid #7a5a2a;
+            border-radius: 12px; padding: 8px; text-align: center;
+        }
+        .prestige-panel .prestige-title {
+            color: #ffd970; font-weight: 700;
+            font-size: clamp(0.6rem, 1.3vw, 0.75rem);
+            letter-spacing: 1.2px; margin-bottom: 3px;
+        }
+        .prestige-panel .prestige-points {
+            color: #ffd970;
+            font-size: clamp(0.85rem, 1.9vw, 1.1rem);
+            font-weight: 700; text-shadow: 0 0 10px #ffb700;
+        }
+        .prestige-panel .prestige-desc {
+            color: #c5a570;
+            font-size: clamp(0.5rem, 1vw, 0.62rem);
+            margin: 3px 0;
+        }
+        .daily-reward {
+            background: linear-gradient(145deg, #1a3a5a, #0f2035);
+            border: 1px solid #2a5e7a;
+            border-radius: 12px; padding: 8px; text-align: center;
+        }
+        .daily-reward.ready {
+            background: linear-gradient(145deg, #5a3a1a, #2a1f0a);
+            border-color: #ffd970;
+            animation: dailyPulse 2s infinite;
+        }
+        @keyframes dailyPulse {
+            0%, 100% { box-shadow: 0 0 8px #ffb70088; }
+            50% { box-shadow: 0 0 20px #ffb700cc; }
+        }
+        .daily-reward .dr-title {
+            color: #7fd4ff; font-weight: 700;
+            font-size: clamp(0.6rem, 1.2vw, 0.72rem);
+            margin-bottom: 3px; letter-spacing: 1px;
+        }
+        .daily-reward.ready .dr-title { color: #ffd970; }
+        .daily-reward .dr-desc {
+            color: #a0c0d5;
+            font-size: clamp(0.5rem, 1vw, 0.62rem);
+            margin-bottom: 5px;
+        }
+        .tab-buttons { display: flex; gap: 3px; margin-bottom: 5px; }
+        .tab-btn {
+            flex: 1; padding: 5px; border-radius: 8px;
+            background: #173040; border: none;
+            color: #7fa8c0;
+            font-size: clamp(0.5rem, 1.05vw, 0.62rem);
+            cursor: pointer; font-weight: 600;
+            box-shadow: 0 2px 0 #061520;
+            min-height: 26px;
+            touch-action: manipulation;
+        }
+        .tab-btn.active {
+            background: #3f8db0; color: white;
+            box-shadow: 0 0 0 1px #b3e4ff, 0 2px 0 #061520;
+        }
+        /* ===== RESPONSIVE LAYOUTS ===== */
+        /* Tablet — side by side but narrower sidebar */
+        @media (max-width: 1100px) {
+            .sidebar { width: clamp(230px, 32vw, 320px); }
+        }
+        /* Small tablet / large phone landscape */
+        @media (max-width: 850px) {
+            #gameRoot { padding: 4px; gap: 4px; }
+            .main-layout { flex-direction: column; }
+            .canvas-area { flex: 1; }
+            .sidebar {
+                width: 100%; max-height: 42vh;
+                flex-direction: row; flex-wrap: wrap;
+                overflow-y: auto;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .sidebar-section {
+                flex: 1 1 calc(50% - 5px);
+                min-width: 180px;
+            }
+            .hint { display: none; }
+        }
+        /* Phone portrait */
+        @media (max-width: 600px) {
+            #gameRoot { padding: 3px; gap: 3px; }
+            .header { padding: 4px 6px; gap: 4px; }
+            .header-info { gap: 3px; }
+            .header-badge { padding: 2px 6px; }
+            .canvas-area { min-height: 40vh; }
+            .sidebar {
+                max-height: 45vh;
+                flex-direction: column;
+            }
+            .sidebar-section {
+                flex: 0 0 auto;
+                min-width: 100%;
+                padding: 6px;
+            }
+            .stats { grid-template-columns: repeat(4, 1fr); }
+            .achievement-grid { grid-template-columns: repeat(6, 1fr); }
+            .zoom-controls { top: 6px; right: 6px; }
+            .tool-btn { padding: 5px 6px; min-height: 28px; }
+        }
+        @media (max-width: 400px) {
+            .stat-item { padding: 2px 1px; }
+            .achievement-grid { grid-template-columns: repeat(6, 1fr); }
+            .header-info .header-badge:not(.gold) { display: none; }
+        }
+        /* Landscape phone */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .main-layout { flex-direction: row; }
+            .sidebar { width: 40vw; max-height: none; flex-direction: column; }
+            .sidebar-section { min-width: 100%; }
+            .canvas-area { flex: 1; }
+            .stats { grid-template-columns: repeat(4, 1fr); }
+            .log-box { height: 40px; }
+        }
+        /* Hide hint on mobile */
+        @media (hover: none) {
+            .hint { display: none; }
+        }
     </style>
 </head>
 <body>
     <div class="notification-toast" id="toast"></div>
-    <div class="game-container">
-        <div class="game-panel">
-            <div class="header">
-                <h1>🏙️ WASEEM SIM CITY</h1>
-                <div class="header-info">
-                    <div class="header-badge" id="weatherBadge">☀️ Sunny</div>
-                    <div class="header-badge" id="seasonBadge">🌸 Spring</div>
-                    <div class="header-badge" id="budgetBadge">📊 Balanced</div>
-                    <div class="sound-controls">
-                        <button class="sound-btn" id="musicToggle" title="Toggle Music">🎵</button>
-                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="40">
-                        <button class="sound-btn" id="sfxToggle" title="Toggle Sound Effects">🔊</button>
-                    </div>
+    <div id="gameRoot">
+        <div class="header">
+            <h1>🏙️ WASEEM SIM CITY</h1>
+            <div class="header-info">
+                <div class="header-badge" id="weatherBadge">☀️ Sunny</div>
+                <div class="header-badge" id="seasonBadge">🌸 Spring</div>
+                <div class="header-badge" id="budgetBadge">📊 Balanced</div>
+                <div class="header-badge gold" id="levelBadge">⭐ Lv1</div>
+                <div class="header-badge gold" id="prestigeBadge">✨ 0 PP</div>
+                <div class="sound-controls">
+                    <button class="sound-btn" id="musicToggle" title="Toggle Music">🎵</button>
+                    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="40">
+                    <button class="sound-btn" id="sfxToggle" title="Toggle Sound Effects">🔊</button>
                 </div>
             </div>
-            <div class="main-layout">
-                <div class="canvas-area">
-                    <canvas id="cityCanvas" width="950" height="620"></canvas>
+        </div>
+        <div class="main-layout">
+            <div class="canvas-area">
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <canvas id="cityCanvas"></canvas>
                     <div class="zoom-controls">
                         <button class="zoom-btn" id="zoomIn" title="Zoom In">＋</button>
                         <button class="zoom-btn" id="zoomOut" title="Zoom Out">－</button>
-                        <button class="zoom-btn" id="zoomReset" title="Reset View">⟲</button>
-                        <div class="zoom-level" id="zoomLevel">1.2x</div>
+                        <button class="zoom-btn" id="zoomReset" title="Reset">⟲</button>
+                        <div class="zoom-level" id="zoomLevel">1.0x</div>
                     </div>
                 </div>
-                <div class="sidebar">
-                    <div class="sidebar-section">
-                        <h3>📊 City Stats</h3>
-                        <div class="stats">
-                            <div class="stat-item"><span class="stat-label">💰 Money</span><span class="stat-value" id="moneyDisplay">$8000</span></div>
-                            <div class="stat-item"><span class="stat-label">👥 Population</span><span class="stat-value" id="popDisplay">0</span></div>
-                            <div class="stat-item"><span class="stat-label">💼 Jobs</span><span class="stat-value" id="jobsDisplay">0</span></div>
-                            <div class="stat-item"><span class="stat-label">🌿 Happy</span><span class="stat-value" id="happinessDisplay">100%</span></div>
-                            <div class="stat-item"><span class="stat-label">⚡ Power</span><span class="stat-value" id="powerDisplay">0/0</span></div>
-                            <div class="stat-item"><span class="stat-label">💧 Water</span><span class="stat-value" id="waterDisplay">0/0</span></div>
-                            <div class="stat-item"><span class="stat-label">🏭 Pollution</span><span class="stat-value" id="pollutionDisplay">0</span></div>
-                            <div class="stat-item"><span class="stat-label">📅 Day</span><span class="stat-value" id="dayDisplay">1</span></div>
-                            <div class="stat-item"><span class="stat-label">🌡️ Tax</span><span class="stat-value" id="taxDisplay">9%</span></div>
-                            <div class="stat-item"><span class="stat-label">🔬 Research</span><span class="stat-value" id="researchDisplay">0</span></div>
-                            <div class="stat-item"><span class="stat-label">🌳 Green</span><span class="stat-value" id="greenDisplay">0%</span></div>
-                            <div class="stat-item"><span class="stat-label">🚦 Traffic</span><span class="stat-value" id="trafficDisplay">0%</span></div>
-                        </div>
+            </div>
+            <div class="sidebar" id="sidebar">
+                <!-- Daily Reward -->
+                <div class="sidebar-section" style="padding:0; background:none; border:none; box-shadow:none;">
+                    <div class="daily-reward" id="dailyReward">
+                        <div class="dr-title">🎁 DAILY REWARD</div>
+                        <div class="dr-desc" id="dailyDesc">Log in daily!</div>
+                        <button class="tool-btn" id="claimDaily" style="width:100%; padding:5px;">Claim</button>
                     </div>
-                    <div class="sidebar-section">
-                        <h3>🏗️ Build Tools <span class="badge" id="buildBadge">Basic</span></h3>
+                </div>
+                <!-- Stats -->
+                <div class="sidebar-section">
+                    <h3>📊 City Stats</h3>
+                    <div class="stats">
+                        <div class="stat-item"><span class="stat-label">💰 Money</span><span class="stat-value" id="moneyDisplay">$8000</span></div>
+                        <div class="stat-item"><span class="stat-label">👥 Pop</span><span class="stat-value" id="popDisplay">0</span></div>
+                        <div class="stat-item"><span class="stat-label">💼 Jobs</span><span class="stat-value" id="jobsDisplay">0</span></div>
+                        <div class="stat-item"><span class="stat-label">🌿 Happy</span><span class="stat-value" id="happinessDisplay">100%</span></div>
+                        <div class="stat-item"><span class="stat-label">⚡ Power</span><span class="stat-value" id="powerDisplay">0/0</span></div>
+                        <div class="stat-item"><span class="stat-label">💧 Water</span><span class="stat-value" id="waterDisplay">0/0</span></div>
+                        <div class="stat-item"><span class="stat-label">🏭 Pollute</span><span class="stat-value" id="pollutionDisplay">0</span></div>
+                        <div class="stat-item"><span class="stat-label">📅 Day</span><span class="stat-value" id="dayDisplay">1</span></div>
+                        <div class="stat-item"><span class="stat-label">🌡️ Tax</span><span class="stat-value" id="taxDisplay">9%</span></div>
+                        <div class="stat-item"><span class="stat-label">🔬 RP</span><span class="stat-value" id="researchDisplay">0</span></div>
+                        <div class="stat-item"><span class="stat-label">🌳 Green</span><span class="stat-value" id="greenDisplay">0%</span></div>
+                        <div class="stat-item"><span class="stat-label">🚦 Traffic</span><span class="stat-value" id="trafficDisplay">0%</span></div>
+                    </div>
+                </div>
+                <!-- Prestige -->
+                <div class="sidebar-section" style="padding:0; background:none; border:none; box-shadow:none;">
+                    <div class="prestige-panel">
+                        <div class="prestige-title">✨ PRESTIGE</div>
+                        <div class="prestige-points" id="prestigePoints">0 PP</div>
+                        <div class="prestige-desc" id="prestigeDesc">Reach $50k</div>
+                        <button class="tool-btn prestige-btn" id="prestigeBtn" disabled style="width:100%; margin-top:4px; padding:5px;">✨ Prestige Reset</button>
+                    </div>
+                </div>
+                <!-- Quests -->
+                <div class="sidebar-section">
+                    <h3>📜 Quests <span class="badge" id="questCount">0/3</span></h3>
+                    <div id="questList"></div>
+                </div>
+                <!-- Achievements -->
+                <div class="sidebar-section">
+                    <h3>🏆 Achievements <span class="badge" id="achCount">0/20</span></h3>
+                    <div class="achievement-grid" id="achGrid"></div>
+                </div>
+                <!-- Tabs -->
+                <div class="sidebar-section">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="build">🏗️ Build</button>
+                        <button class="tab-btn" data-tab="research">🔬 Res</button>
+                        <button class="tab-btn" data-tab="policies">📜 Policy</button>
+                        <button class="tab-btn" data-tab="disasters">🌪️ Dis</button>
+                    </div>
+                    <div id="tabContentBuild" class="tab-content">
                         <div class="toolbar" id="buildToolbar">
-                            <button class="tool-btn active" data-tool="residential">🏠 House $80</button>
-                            <button class="tool-btn" data-tool="apartment">🏢 Apt $200</button>
-                            <button class="tool-btn" data-tool="commercial">🛒 Shop $120</button>
-                            <button class="tool-btn" data-tool="office">🏬 Office $250</button>
-                            <button class="tool-btn" data-tool="industrial">🏭 Factory $180</button>
-                            <button class="tool-btn" data-tool="powerplant">⚡ Power $350</button>
-                            <button class="tool-btn" data-tool="watertower">💧 Water $180</button>
-                            <button class="tool-btn" data-tool="park">🌳 Park $60</button>
-                            <button class="tool-btn" data-tool="road">🛣️ Road $15</button>
-                            <button class="tool-btn" data-tool="tree">🌲 Tree $30</button>
-                            <button class="tool-btn" data-tool="hospital" id="toolHospital" disabled>🏥 Hospital $500</button>
-                            <button class="tool-btn" data-tool="school" id="toolSchool" disabled>🎓 School $450</button>
-                            <button class="tool-btn" data-tool="stadium" id="toolStadium" disabled>🏟️ Stadium $800</button>
-                            <button class="tool-btn" data-tool="solar" id="toolSolar" disabled>☀️ Solar $600</button>
-                            <button class="tool-btn" data-tool="subway" id="toolSubway" disabled>🚇 Subway $300</button>
+                            <button class="tool-btn active" data-tool="residential">🏠 $80</button>
+                            <button class="tool-btn" data-tool="apartment">🏢 $200</button>
+                            <button class="tool-btn" data-tool="commercial">🛒 $120</button>
+                            <button class="tool-btn" data-tool="office">🏬 $250</button>
+                            <button class="tool-btn" data-tool="industrial">🏭 $180</button>
+                            <button class="tool-btn" data-tool="powerplant">⚡ $350</button>
+                            <button class="tool-btn" data-tool="watertower">💧 $180</button>
+                            <button class="tool-btn" data-tool="park">🌳 $60</button>
+                            <button class="tool-btn" data-tool="road">🛣️ $15</button>
+                            <button class="tool-btn" data-tool="tree">🌲 $30</button>
+                            <button class="tool-btn" data-tool="hospital" id="toolHospital" disabled>🏥 $500</button>
+                            <button class="tool-btn" data-tool="school" id="toolSchool" disabled>🎓 $450</button>
+                            <button class="tool-btn" data-tool="stadium" id="toolStadium" disabled>🏟️ $800</button>
+                            <button class="tool-btn" data-tool="solar" id="toolSolar" disabled>☀️ $600</button>
+                            <button class="tool-btn" data-tool="subway" id="toolSubway" disabled>🚇 $300</button>
                         </div>
                     </div>
-                    <div class="sidebar-section">
-                        <h3>⬆️ Selected Building</h3>
-                        <div class="selected-info" id="selectedInfo">
-                            <span class="name">None selected</span> · Click a building on the map
-                        </div>
-                        <div class="toolbar" style="margin-top: 6px;">
-                            <button class="tool-btn upgrade-btn" id="upgradeBtn" disabled>⬆️ Upgrade (—)</button>
-                            <button class="tool-btn upgrade-btn" id="demolishBtn" disabled>🗑️ Demolish</button>
-                        </div>
-                    </div>
-                    <div class="sidebar-section">
-                        <h3>🔬 Research <span class="badge" id="researchPoints">0 RP</span></h3>
+                    <div id="tabContentResearch" class="tab-content" style="display:none;">
                         <div class="toolbar" id="researchToolbar">
-                            <button class="tool-btn research-btn" data-research="hospital">🏥 Healthcare (10 RP)</button>
-                            <button class="tool-btn research-btn" data-research="school">🎓 Education (15 RP)</button>
-                            <button class="tool-btn research-btn" data-research="stadium">🏟️ Entertainment (20 RP)</button>
-                            <button class="tool-btn research-btn" data-research="solar">☀️ Solar Power (25 RP)</button>
-                            <button class="tool-btn research-btn" data-research="subway">🚇 Subway (30 RP)</button>
+                            <button class="tool-btn research-btn" data-research="hospital">🏥 Health 10RP</button>
+                            <button class="tool-btn research-btn" data-research="school">🎓 School 15RP</button>
+                            <button class="tool-btn research-btn" data-research="stadium">🏟️ Stadium 20RP</button>
+                            <button class="tool-btn research-btn" data-research="solar">☀️ Solar 25RP</button>
+                            <button class="tool-btn research-btn" data-research="subway">🚇 Subway 30RP</button>
                         </div>
                     </div>
-                    <div class="sidebar-section">
-                        <h3>🌪️ Disasters</h3>
+                    <div id="tabContentPolicies" class="tab-content" style="display:none;">
+                        <div class="toolbar">
+                            <button class="tool-btn policy-btn" id="policyGreen">🌱 Green</button>
+                            <button class="tool-btn policy-btn" id="policyTax">💰 LowTax</button>
+                            <button class="tool-btn policy-btn" id="policyEducation">🎓 Edu</button>
+                            <button class="tool-btn policy-btn" id="policyHealthcare">🏥 Health</button>
+                            <button class="tool-btn policy-btn" id="policyRecycling">♻️ Recycle</button>
+                            <button class="tool-btn policy-btn" id="policyTransit">🚌 Transit</button>
+                        </div>
+                    </div>
+                    <div id="tabContentDisasters" class="tab-content" style="display:none;">
                         <div class="toolbar">
                             <button class="tool-btn disaster-btn" id="disasterFire">🔥 Fire</button>
                             <button class="tool-btn disaster-btn" id="disasterTornado">🌪️ Tornado</button>
@@ -341,47 +610,49 @@
                             <button class="tool-btn disaster-btn" id="disasterEarthquake">🌊 Quake</button>
                         </div>
                     </div>
-                    <div class="sidebar-section">
-                        <h3>📜 Policies</h3>
-                        <div class="toolbar">
-                            <button class="tool-btn policy-btn" id="policyGreen">🌱 Green</button>
-                            <button class="tool-btn policy-btn" id="policyTax">💰 Low Tax</button>
-                            <button class="tool-btn policy-btn" id="policyEducation">🎓 Education</button>
-                            <button class="tool-btn policy-btn" id="policyHealthcare">🏥 Health</button>
-                            <button class="tool-btn policy-btn" id="policyRecycling">♻️ Recycle</button>
-                            <button class="tool-btn policy-btn" id="policyTransit">🚌 Transit</button>
-                        </div>
-                    </div>
-                    <div class="sidebar-section">
-                        <h3>⏱️ Time & Weather</h3>
-                        <div class="time-toggle">
-                            <button class="time-btn" id="timeDawn">🌅</button>
-                            <button class="time-btn active" id="timeDay">☀️</button>
-                            <button class="time-btn" id="timeDusk">🌇</button>
-                            <button class="time-btn" id="timeNight">🌙</button>
-                        </div>
-                        <div class="speed-toggle">
-                            <button class="speed-btn" data-speed="1">1x</button>
-                            <button class="speed-btn active" data-speed="2">2x</button>
-                            <button class="speed-btn" data-speed="4">4x</button>
-                            <button class="speed-btn" data-speed="8">8x</button>
-                        </div>
-                        <div class="weather-badge sunny" id="weatherInfo">☀️ Sunny · Clear skies</div>
-                    </div>
-                    <div class="sidebar-section">
-                        <h3>📋 City Log</h3>
-                        <div class="log-box" id="logBox">
-                            <div class="log-entry info">Welcome to Waseem Sim City!</div>
-                        </div>
-                    </div>
-                    <button class="tool-btn reset-btn" id="resetBtn" style="width: 100%; padding: 10px;">🔄 Reset City</button>
                 </div>
+                <!-- Selected -->
+                <div class="sidebar-section">
+                    <h3>⬆️ Selected</h3>
+                    <div class="selected-info" id="selectedInfo">
+                        <span class="name">None</span>
+                    </div>
+                    <div class="toolbar" style="margin-top:4px;">
+                        <button class="tool-btn upgrade-btn" id="upgradeBtn" disabled>⬆️ Upgrade</button>
+                        <button class="tool-btn upgrade-btn" id="demolishBtn" disabled>🗑️ Demolish</button>
+                    </div>
+                </div>
+                <!-- Time -->
+                <div class="sidebar-section">
+                    <h3>⏱️ Time & Weather</h3>
+                    <div class="time-toggle">
+                        <button class="time-btn" id="timeDawn">🌅</button>
+                        <button class="time-btn active" id="timeDay">☀️</button>
+                        <button class="time-btn" id="timeDusk">🌇</button>
+                        <button class="time-btn" id="timeNight">🌙</button>
+                    </div>
+                    <div class="speed-toggle">
+                        <button class="speed-btn" data-speed="1">1x</button>
+                        <button class="speed-btn active" data-speed="2">2x</button>
+                        <button class="speed-btn" data-speed="4">4x</button>
+                        <button class="speed-btn" data-speed="8">8x</button>
+                    </div>
+                    <div class="weather-badge sunny" id="weatherInfo">☀️ Sunny</div>
+                </div>
+                <!-- Log -->
+                <div class="sidebar-section">
+                    <h3>📋 Log</h3>
+                    <div class="log-box" id="logBox">
+                        <div class="log-entry gold">Welcome!</div>
+                    </div>
+                </div>
+                <button class="tool-btn reset-btn" id="resetBtn" style="width:100%; padding:6px;">🔄 Reset City</button>
             </div>
-            <div class="hint">
-                🖱️ <kbd>Wheel</kbd> zoom · <kbd>Drag</kbd> pan · <kbd>Click</kbd> build/select · <kbd>Right-click</kbd> reset view
-            </div>
-            <div class="music-info" id="musicInfo">🎵 Ambient City · Press 🎵 to toggle music</div>
         </div>
+        <div class="hint">
+            🖱️ Wheel zoom · Drag pan · Click build/select
+        </div>
+        <div class="music-info" id="musicInfo">🎵 Ambient City</div>
     </div>
     <script>
         // ============ AUDIO ENGINE ============
@@ -390,49 +661,35 @@
             let musicEnabled = true, sfxEnabled = true, volume = 0.4;
             let musicPlaying = false, musicScheduler = null, musicStep = 0;
             let droneOscillators = [];
-
             const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
             const bassNotes = [65.41, 73.42, 82.41, 98.00];
-
             function init() {
                 if (audioCtx) return;
                 try {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    masterGain = audioCtx.createGain();
-                    masterGain.gain.value = volume;
-                    masterGain.connect(audioCtx.destination);
+                    masterGain = audioCtx.createGain(); masterGain.gain.value = volume; masterGain.connect(audioCtx.destination);
                     musicGain = audioCtx.createGain(); musicGain.gain.value = 0.35; musicGain.connect(masterGain);
                     sfxGain = audioCtx.createGain(); sfxGain.gain.value = 0.7; sfxGain.connect(masterGain);
                 } catch (e) { console.warn('Audio not supported', e); }
             }
             function resume() { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }
-
             function startMusic() {
                 if (!audioCtx || musicPlaying) return;
                 resume(); musicPlaying = true;
-                const droneFreqs = [130.81, 164.81];
-                droneOscillators = droneFreqs.map((freq, i) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    const filter = audioCtx.createBiquadFilter();
-                    osc.type = i === 0 ? 'sine' : 'triangle';
-                    osc.frequency.value = freq;
+                droneOscillators = [130.81, 164.81].map((freq, i) => {
+                    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(), filter = audioCtx.createBiquadFilter();
+                    osc.type = i === 0 ? 'sine' : 'triangle'; osc.frequency.value = freq;
                     osc.detune.value = i === 0 ? 3 : -3;
                     filter.type = 'lowpass'; filter.frequency.value = 500;
                     gain.gain.value = 0.08;
-                    const lfo = audioCtx.createOscillator();
-                    const lfoGain = audioCtx.createGain();
-                    lfo.frequency.value = 0.05 + i * 0.02;
-                    lfoGain.gain.value = 0.04;
-                    lfo.connect(lfoGain); lfoGain.connect(gain.gain);
-                    lfo.start();
-                    osc.connect(filter); filter.connect(gain); gain.connect(musicGain);
-                    osc.start();
+                    const lfo = audioCtx.createOscillator(), lfoGain = audioCtx.createGain();
+                    lfo.frequency.value = 0.05 + i * 0.02; lfoGain.gain.value = 0.04;
+                    lfo.connect(lfoGain); lfoGain.connect(gain.gain); lfo.start();
+                    osc.connect(filter); filter.connect(gain); gain.connect(musicGain); osc.start();
                     return { osc, gain, lfo };
                 });
                 scheduleMelody();
             }
-
             function scheduleMelody() {
                 if (!musicPlaying) return;
                 const now = audioCtx.currentTime;
@@ -440,18 +697,11 @@
                 const note = scale[Math.floor(Math.random() * scale.length)];
                 const octaveShift = Math.random() < 0.3 ? 0.5 : (Math.random() < 0.2 ? 2 : 1);
                 playPadNote(note * octaveShift, now, stepDuration * 1.2);
-                if (Math.random() < 0.4) {
-                    const bellNote = scale[Math.floor(Math.random() * scale.length)] * 2;
-                    playBellNote(bellNote, now + 0.3, 3 + Math.random() * 2);
-                }
-                if (musicStep % 4 === 0) {
-                    const bassNote = bassNotes[Math.floor(Math.random() * bassNotes.length)];
-                    playBassNote(bassNote, now, 4);
-                }
+                if (Math.random() < 0.4) playBellNote(scale[Math.floor(Math.random() * scale.length)] * 2, now + 0.3, 3 + Math.random() * 2);
+                if (musicStep % 4 === 0) playBassNote(bassNotes[Math.floor(Math.random() * bassNotes.length)], now, 4);
                 musicStep++;
                 musicScheduler = setTimeout(scheduleMelody, stepDuration * 1000);
             }
-
             function playPadNote(freq, startTime, duration) {
                 if (!audioCtx) return;
                 const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(), filter = audioCtx.createBiquadFilter();
@@ -483,14 +733,12 @@
                 osc.connect(gain); gain.connect(musicGain);
                 osc.start(startTime); osc.stop(startTime + duration + 0.1);
             }
-
             function stopMusic() {
                 musicPlaying = false;
                 if (musicScheduler) { clearTimeout(musicScheduler); musicScheduler = null; }
                 droneOscillators.forEach(d => { try { d.osc.stop(); d.lfo.stop(); } catch (e) {} });
                 droneOscillators = [];
             }
-
             function playTone(freq, type, duration, vol, targetGain) {
                 if (!audioCtx || !sfxEnabled) return;
                 resume();
@@ -500,8 +748,7 @@
                 gain.gain.setValueAtTime(0, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(vol || 0.15, audioCtx.currentTime + 0.01);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                osc.connect(gain); gain.connect(g);
-                osc.start(); osc.stop(audioCtx.currentTime + duration + 0.05);
+                osc.connect(gain); gain.connect(g); osc.start(); osc.stop(audioCtx.currentTime + duration + 0.05);
             }
             function playNoise(duration, vol, filterFreq) {
                 if (!audioCtx || !sfxEnabled) return;
@@ -518,17 +765,17 @@
                 noise.connect(filter); filter.connect(gain); gain.connect(sfxGain);
                 noise.start(); noise.stop(audioCtx.currentTime + duration);
             }
-
             const sfx = {
                 build: () => { playTone(523.25, 'triangle', 0.15, 0.15); setTimeout(() => playTone(659.25, 'triangle', 0.2, 0.12), 60); },
-                buildLarge: () => { playTone(392, 'triangle', 0.2, 0.18); setTimeout(() => playTone(523.25, 'triangle', 0.25, 0.15), 80); setTimeout(() => playTone(659.25, 'triangle', 0.3, 0.12), 160); },
-                upgrade: () => { playTone(523.25, 'sine', 0.12, 0.15); setTimeout(() => playTone(659.25, 'sine', 0.12, 0.15), 80); setTimeout(() => playTone(880, 'sine', 0.2, 0.15), 160); setTimeout(() => playTone(1174.66, 'sine', 0.3, 0.12), 260); },
+                upgrade: () => { playTone(523.25, 'sine', 0.12, 0.15); setTimeout(() => playTone(659.25, 'sine', 0.12, 0.15), 80); setTimeout(() => playTone(880, 'sine', 0.2, 0.15), 160); },
                 demolish: () => { playNoise(0.3, 0.2, 500); playTone(200, 'sawtooth', 0.25, 0.12); },
-                error: () => { playTone(180, 'sawtooth', 0.15, 0.1); setTimeout(() => playTone(140, 'sawtooth', 0.2, 0.08), 80); },
-                coin: () => { playTone(987.77, 'sine', 0.08, 0.12); setTimeout(() => playTone(1318.51, 'sine', 0.15, 0.1), 50); },
-                research: () => { playTone(659.25, 'sine', 0.15, 0.12); setTimeout(() => playTone(880, 'sine', 0.15, 0.12), 100); setTimeout(() => playTone(1174.66, 'sine', 0.25, 0.1), 200); },
+                error: () => { playTone(180, 'sawtooth', 0.15, 0.1); },
+                research: () => { playTone(659.25, 'sine', 0.15, 0.12); setTimeout(() => playTone(880, 'sine', 0.15, 0.12), 100); },
                 policy: () => { playTone(440, 'triangle', 0.12, 0.12); setTimeout(() => playTone(554.37, 'triangle', 0.2, 0.12), 80); },
-                disaster: () => { playNoise(0.4, 0.2, 400); playTone(120, 'sawtooth', 0.5, 0.15); playTone(80, 'sawtooth', 0.6, 0.12); },
+                questComplete: () => { playTone(659.25, 'sine', 0.15, 0.15); setTimeout(() => playTone(783.99, 'sine', 0.15, 0.15), 100); setTimeout(() => playTone(1046.5, 'sine', 0.2, 0.15), 200); },
+                achievement: () => { playTone(880, 'sine', 0.15, 0.15); setTimeout(() => playTone(1174.66, 'sine', 0.15, 0.15), 80); setTimeout(() => playTone(1567.98, 'sine', 0.25, 0.15), 160); },
+                prestige: () => { playTone(261.63, 'sine', 0.3, 0.15); setTimeout(() => playTone(329.63, 'sine', 0.3, 0.15), 150); setTimeout(() => playTone(523.25, 'sine', 0.5, 0.18), 450); },
+                daily: () => { playTone(659.25, 'sine', 0.1, 0.15); setTimeout(() => playTone(783.99, 'sine', 0.1, 0.15), 80); setTimeout(() => playTone(987.77, 'sine', 0.15, 0.15), 160); },
                 fire: () => playNoise(0.6, 0.18, 800),
                 tornado: () => playNoise(0.8, 0.2, 300),
                 ufo: () => {
@@ -539,18 +786,16 @@
                     osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.8);
                     gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.9);
-                    osc.connect(gain); gain.connect(sfxGain);
-                    osc.start(); osc.stop(audioCtx.currentTime + 1);
+                    osc.connect(gain); gain.connect(sfxGain); osc.start(); osc.stop(audioCtx.currentTime + 1);
                 },
                 meteor: () => { playNoise(0.5, 0.25, 500); playTone(90, 'sawtooth', 0.7, 0.15); },
                 plague: () => { playTone(200, 'sine', 0.4, 0.1); playTone(150, 'sine', 0.5, 0.08); },
                 earthquake: () => { playNoise(1.2, 0.25, 200); playTone(60, 'sawtooth', 1.0, 0.15); },
                 dayTick: () => playTone(1046.5, 'sine', 0.1, 0.08),
                 click: () => playTone(660, 'sine', 0.05, 0.08),
-                select: () => { playTone(880, 'sine', 0.06, 0.1); },
-                reset: () => { playTone(392, 'sine', 0.15, 0.12); setTimeout(() => playTone(523.25, 'sine', 0.15, 0.12), 100); setTimeout(() => playTone(659.25, 'sine', 0.2, 0.12), 200); setTimeout(() => playTone(783.99, 'sine', 0.3, 0.1), 300); }
+                select: () => playTone(880, 'sine', 0.06, 0.1),
+                reset: () => { playTone(392, 'sine', 0.15, 0.12); setTimeout(() => playTone(523.25, 'sine', 0.15, 0.12), 100); setTimeout(() => playTone(659.25, 'sine', 0.2, 0.12), 200); }
             };
-
             return {
                 init, resume, startMusic, stopMusic,
                 playSFX: (name) => { if (sfx[name]) sfx[name](); },
@@ -568,12 +813,32 @@
         (function() {
             const canvas = document.getElementById('cityCanvas');
             const ctx = canvas.getContext('2d');
+            const wrapper = document.getElementById('canvasWrapper');
 
-            // ---------- VIEWPORT (FIXED ZOOM) ----------
-            let zoom = 1.2, camX = 0, camY = 0;
-            const MIN_ZOOM = 0.35, MAX_ZOOM = 5.0;
+            // ---------- VIEWPORT ----------
+            let zoom = 1.0, camX = 0, camY = 0;
+            const MIN_ZOOM = 0.4, MAX_ZOOM = 4.0;
             let isPanning = false, panMoved = false;
             let panStartX = 0, panStartY = 0, camStartX = 0, camStartY = 0;
+
+            // Canvas physical size (CSS pixels × DPR)
+            let canvasW = 800, canvasH = 600;
+            let dpr = 1;
+
+            function resizeCanvas() {
+                const rect = wrapper.getBoundingClientRect();
+                canvasW = rect.width;
+                canvasH = rect.height;
+                dpr = Math.min(window.devicePixelRatio || 1, 2);
+                canvas.width = Math.floor(canvasW * dpr);
+                canvas.height = Math.floor(canvasH * dpr);
+                canvas.style.width = canvasW + 'px';
+                canvas.style.height = canvasH + 'px';
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+
+            window.addEventListener('resize', () => { resizeCanvas(); });
+            window.addEventListener('orientationchange', () => { setTimeout(resizeCanvas, 100); });
 
             // ---------- GRID ----------
             const COLS = 24, ROWS = 24;
@@ -592,13 +857,227 @@
             let terrain = Array(ROWS).fill().map(() => Array(COLS).fill('grass'));
             let currentTool = 'residential';
             let agents = [];
-            const MAX_AGENTS = 150;
+            const MAX_AGENTS = 100;
             let hoverCol = null, hoverRow = null;
             let selectedCell = null;
             let time = 0;
             let weather = 'sunny', season = 'spring';
             let weatherTimer = 0, seasonTimer = 0;
             let totalTraffic = 0, greenEnergy = 0;
+
+            let cityLevel = 1, cityXP = 0, cityXPNeeded = 100;
+            let prestigePoints = 0, prestigeCount = 0;
+            let totalBuildingsPlaced = 0, totalUpgrades = 0, totalDisastersSurvived = 0;
+            let totalDaysPlayed = 0;
+            let lastLoginDate = null, dailyStreak = 0;
+            let unlockedAchievements = {};
+            let activeQuests = [];
+            let completedQuests = 0;
+            let peakPopulation = 0;
+            let buildingsByType = {};
+
+            const ACHIEVEMENTS = {
+                firstBuild: { icon: '🏠', name: 'First Steps', desc: 'Place first building', check: () => totalBuildingsPlaced >= 1 },
+                tenBuildings: { icon: '🏘️', name: 'Suburbia', desc: 'Place 10 buildings', check: () => totalBuildingsPlaced >= 10 },
+                fiftyBuildings: { icon: '🏙️', name: 'Urban Sprawl', desc: 'Place 50 buildings', check: () => totalBuildingsPlaced >= 50 },
+                hundredBuildings: { icon: '🌆', name: 'Megacity', desc: 'Place 100 buildings', check: () => totalBuildingsPlaced >= 100 },
+                pop100: { icon: '👥', name: 'Small Town', desc: 'Reach 100 population', check: () => peakPopulation >= 100 },
+                pop500: { icon: '👨‍👩‍👧', name: 'Growing City', desc: 'Reach 500 population', check: () => peakPopulation >= 500 },
+                pop1000: { icon: '🌍', name: 'Metropolis', desc: 'Reach 1000 population', check: () => peakPopulation >= 1000 },
+                rich: { icon: '💰', name: 'Wealthy', desc: 'Have $50,000', check: () => money >= 50000 },
+                superRich: { icon: '💎', name: 'Billionaire', desc: 'Have $500,000', check: () => money >= 500000 },
+                survivor: { icon: '🛡️', name: 'Survivor', desc: 'Survive 5 disasters', check: () => totalDisastersSurvived >= 5 },
+                upgrader: { icon: '⬆️', name: 'Upgrader', desc: 'Upgrade 25 buildings', check: () => totalUpgrades >= 25 },
+                maxLevel: { icon: '⭐', name: 'Perfectionist', desc: 'Level 3 building', check: () => {
+                    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++)
+                        if (grid[r][c] && grid[r][c].level === 3) return true;
+                    return false;
+                }},
+                happy100: { icon: '😊', name: 'Utopia', desc: '100% happiness', check: () => happiness >= 100 },
+                greenCity: { icon: '🌱', name: 'Eco Warrior', desc: '75% green energy', check: () => greenEnergy >= 75 },
+                researcher: { icon: '🔬', name: 'Scientist', desc: 'Unlock all research', check: () => Object.keys(unlockedResearch).length >= 5 },
+                prestige1: { icon: '✨', name: 'Reborn', desc: 'Prestige once', check: () => prestigeCount >= 1 },
+                prestige3: { icon: '🌟', name: 'Eternal', desc: 'Prestige 3 times', check: () => prestigeCount >= 3 },
+                streak7: { icon: '📅', name: 'Dedicated', desc: '7-day streak', check: () => dailyStreak >= 7 },
+                streak30: { icon: '🔥', name: 'Legendary', desc: '30-day streak', check: () => dailyStreak >= 30 },
+                hundredDays: { icon: '⏳', name: 'Time Traveler', desc: 'Play 100 days', check: () => totalDaysPlayed >= 100 }
+            };
+
+            function generateQuest() {
+                const types = [
+                    { id: 'build_res', title: 'Build Houses', desc: 'Place 5 residential buildings', target: 5, type: 'build_type', typeKey: 'residential', reward: 500, xp: 50 },
+                    { id: 'build_com', title: 'Shopping Spree', desc: 'Build 3 commercial buildings', target: 3, type: 'build_type', typeKey: 'commercial', reward: 400, xp: 40 },
+                    { id: 'build_ind', title: 'Industrialize', desc: 'Build 2 factories', target: 2, type: 'build_type', typeKey: 'industrial', reward: 600, xp: 60 },
+                    { id: 'build_park', title: 'Green Thumb', desc: 'Build 4 parks/trees', target: 4, type: 'build_type', typeKey: 'park_tree', reward: 300, xp: 30 },
+                    { id: 'upgrade', title: 'Renovation', desc: 'Upgrade 3 buildings', target: 3, type: 'upgrade', reward: 600, xp: 80 },
+                    { id: 'pop', title: 'Growing Nation', desc: 'Reach 100 population', target: 1, type: 'pop_target', targetValue: 100, reward: 800, xp: 100 },
+                    { id: 'money', title: 'Save Money', desc: 'Have $10,000', target: 1, type: 'money_target', targetValue: 10000, reward: 500, xp: 50 },
+                    { id: 'road', title: 'Road Network', desc: 'Build 5 road segments', target: 5, type: 'build_type', typeKey: 'road', reward: 250, xp: 25 },
+                    { id: 'happy', title: 'Happy Citizens', desc: 'Reach 75% happiness', target: 1, type: 'happy_target', targetValue: 75, reward: 700, xp: 70 }
+                ];
+                const t = types[Math.floor(Math.random() * types.length)];
+                return { ...t, progress: 0, completed: false, id: t.id + '_' + Date.now() + '_' + Math.random() };
+            }
+
+            function refreshQuests() {
+                while (activeQuests.filter(q => !q.completed).length < 3) {
+                    const q = generateQuest();
+                    activeQuests.push(q);
+                    if (activeQuests.length > 6) {
+                        activeQuests = activeQuests.filter(x => !x.completed).concat(activeQuests.filter(x => x.completed).slice(-2));
+                    }
+                }
+            }
+
+            function updateQuestProgress() {
+                activeQuests.forEach(q => {
+                    if (q.completed) return;
+                    if (q.type === 'build_type') {
+                        if (q.typeKey === 'park_tree') q.progress = (buildingsByType['park'] || 0) + (buildingsByType['tree'] || 0);
+                        else q.progress = buildingsByType[q.typeKey] || 0;
+                    } else if (q.type === 'upgrade') q.progress = totalUpgrades;
+                    else if (q.type === 'pop_target') q.progress = population >= q.targetValue ? 1 : 0;
+                    else if (q.type === 'money_target') q.progress = money >= q.targetValue ? 1 : 0;
+                    else if (q.type === 'happy_target') q.progress = happiness >= q.targetValue ? 1 : 0;
+                    if (q.progress >= q.target && !q.completed) {
+                        q.completed = true;
+                        money += q.reward;
+                        cityXP += q.xp;
+                        completedQuests++;
+                        log(`📜 Quest: ${q.title}! +$${q.reward}, +${q.xp}XP`, 'gold');
+                        showToast(`📜 ${q.title}! +$${q.reward}`, 3000, true);
+                        AudioEngine.playSFX('questComplete');
+                    }
+                });
+                if (activeQuests.filter(q => !q.completed).length < 2) refreshQuests();
+                renderQuests();
+            }
+
+            function checkAchievements() {
+                Object.keys(ACHIEVEMENTS).forEach(key => {
+                    if (!unlockedAchievements[key] && ACHIEVEMENTS[key].check()) {
+                        unlockedAchievements[key] = true;
+                        const a = ACHIEVEMENTS[key];
+                        money += 1000; cityXP += 100;
+                        log(`🏆 ${a.name}! +$1000`, 'gold');
+                        showToast(`🏆 ${a.icon} ${a.name}! +$1000`, 3500, true);
+                        AudioEngine.playSFX('achievement');
+                    }
+                });
+                renderAchievements();
+            }
+
+            function addXP(amount) {
+                cityXP += amount;
+                while (cityXP >= cityXPNeeded) {
+                    cityXP -= cityXPNeeded;
+                    cityLevel++;
+                    cityXPNeeded = Math.floor(cityXPNeeded * 1.5);
+                    money += 2000;
+                    log(`⭐ Level ${cityLevel}! +$2000`, 'gold');
+                    showToast(`⭐ Level ${cityLevel}! +$2000`, 3500, true);
+                    AudioEngine.playSFX('upgrade');
+                    const locked = Object.keys(RESEARCH).filter(k => !unlockedResearch[k]);
+                    if (locked.length > 0 && cityLevel >= 3) {
+                        const r = locked[Math.floor(Math.random() * locked.length)];
+                        unlockedResearch[r] = true;
+                        researchPoints += 5;
+                        const toolBtn = document.getElementById('tool' + r.charAt(0).toUpperCase() + r.slice(1));
+                        if (toolBtn) toolBtn.disabled = false;
+                        log(`🔬 Free research: ${RESEARCH[r].name}!`, 'gold');
+                    }
+                }
+                updateHeaderBadges();
+            }
+
+            function getPrestigeGain() { return Math.floor(Math.sqrt(money / 50000) + (population / 500) + cityLevel * 2 + completedQuests * 0.5); }
+            function canPrestige() { return money >= 50000; }
+
+            function doPrestige() {
+                if (!canPrestige()) return;
+                const gain = getPrestigeGain();
+                if (!confirm(`Prestige Reset?\n\nGain ${gain} Prestige Points.\nCity resets but you keep achievements & level.\n\n+${gain * 2}% income bonus forever!\n\nContinue?`)) return;
+                prestigePoints += gain;
+                prestigeCount++;
+                money = 8000 + prestigePoints * 100;
+                population = 0; jobs = 0; happiness = 100; day = 1; researchPoints = 0;
+                unlockedResearch = {};
+                policies = { green: false, lowTax: false, education: false, healthcare: false, recycling: false, transit: false };
+                agents = []; selectedCell = null;
+                document.querySelectorAll('.policy-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.research-btn').forEach(b => { b.classList.remove('unlocked'); b.disabled = false; });
+                ['toolHospital','toolSchool','toolStadium','toolSolar','toolSubway'].forEach(id => {
+                    const el = document.getElementById(id); if (el) el.disabled = true;
+                });
+                initGrid();
+                log(`✨ PRESTIGE! +${gain} PP! Bonus: +${prestigePoints * 2}% income`, 'gold');
+                showToast(`✨ Prestige! ${gain} PP gained!`, 4000, true);
+                AudioEngine.playSFX('prestige');
+                camX = 0; camY = 0; zoom = 1.0;
+                updateZoomDisplay();
+                checkAchievements();
+                recalcStats();
+            }
+
+            function getTodayString() {
+                const d = new Date();
+                return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+            }
+
+            function checkDailyReward() {
+                const today = getTodayString();
+                if (lastLoginDate !== today) {
+                    const y = new Date(); y.setDate(y.getDate() - 1);
+                    const yStr = `${y.getFullYear()}-${y.getMonth()}-${y.getDate()}`;
+                    dailyStreak = (lastLoginDate === yStr) ? dailyStreak + 1 : 1;
+                    lastLoginDate = today;
+                    document.getElementById('dailyReward').classList.add('ready');
+                    document.getElementById('dailyDesc').textContent = `Day ${dailyStreak} streak! Click to claim.`;
+                    document.getElementById('claimDaily').disabled = false;
+                    document.getElementById('claimDaily').textContent = 'Claim';
+                } else {
+                    document.getElementById('dailyReward').classList.remove('ready');
+                    document.getElementById('dailyDesc').textContent = `Come back tomorrow! (Day ${dailyStreak})`;
+                    document.getElementById('claimDaily').disabled = true;
+                    document.getElementById('claimDaily').textContent = '✅ Claimed';
+                }
+            }
+
+            function claimDaily() {
+                if (lastLoginDate !== getTodayString()) return;
+                const baseReward = 500 + dailyStreak * 200 + cityLevel * 100;
+                const reward = Math.min(baseReward, 5000);
+                const rp = 3 + Math.floor(dailyStreak / 3);
+                money += reward;
+                researchPoints += rp;
+                addXP(50);
+                log(`🎁 Day ${dailyStreak}: +$${reward}, +${rp}RP`, 'gold');
+                showToast(`🎁 Day ${dailyStreak}! +$${reward}`, 3000, true);
+                AudioEngine.playSFX('daily');
+                document.getElementById('dailyReward').classList.remove('ready');
+                document.getElementById('claimDaily').disabled = true;
+                document.getElementById('claimDaily').textContent = '✅ Claimed';
+                checkAchievements();
+                recalcStats();
+            }
+
+            function showToast(message, duration = 2500, gold = false) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.toggle('gold', gold);
+                toast.classList.add('show');
+                clearTimeout(toast._timer);
+                toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+            }
+
+            function log(message, type = 'info') {
+                const t = new Date().toLocaleTimeString();
+                logEntries.push({ message, type, time: t });
+                if (logEntries.length > 25) logEntries.shift();
+                const box = document.getElementById('logBox');
+                box.innerHTML = logEntries.map(e => `<div class="log-entry ${e.type}">[${e.time}] ${e.message}</div>`).join('');
+                box.scrollTop = box.scrollHeight;
+            }
 
             const BUILDINGS = {
                 residential: { cost: 80, pop: 5, power: 1, water: 1, color: '#e6c8a0', jobs: 0, happiness: 0, pollution: 0, roofColor: '#a55e3c', green: 0 },
@@ -631,9 +1110,9 @@
 
             const WEATHER_TYPES = {
                 sunny: { name: 'Sunny', icon: '☀️', effect: 'Clear skies', happinessMod: 2, class: 'sunny' },
-                rain: { name: 'Rain', icon: '🌧️', effect: 'Rainy day', happinessMod: -3, class: 'rain' },
-                storm: { name: 'Storm', icon: '⛈️', effect: 'Thunderstorms', happinessMod: -6, class: 'storm' },
-                snow: { name: 'Snow', icon: '❄️', effect: 'Snowfall', happinessMod: -2, class: 'snow' },
+                rain: { name: 'Rain', icon: '🌧️', effect: 'Rainy', happinessMod: -3, class: 'rain' },
+                storm: { name: 'Storm', icon: '⛈️', effect: 'Stormy', happinessMod: -6, class: 'storm' },
+                snow: { name: 'Snow', icon: '❄️', effect: 'Snowy', happinessMod: -2, class: 'snow' },
                 fog: { name: 'Fog', icon: '🌫️', effect: 'Foggy', happinessMod: -1, class: 'fog' }
             };
             const SEASONS = {
@@ -648,11 +1127,12 @@
                 if (!b) return null;
                 const base = BUILDINGS[b.type];
                 const mult = LEVEL_MULTIPLIERS[b.level] || 1;
+                const pBonus = 1 + prestigePoints * 0.02;
                 return {
-                    pop: Math.floor(base.pop * mult),
-                    jobs: Math.floor(base.jobs * mult),
-                    power: base.power < 0 ? Math.floor(base.power * mult) : Math.floor(base.power * mult),
-                    water: base.water < 0 ? Math.floor(base.water * mult) : Math.floor(base.water * mult),
+                    pop: Math.floor(base.pop * mult * pBonus),
+                    jobs: Math.floor(base.jobs * mult * pBonus),
+                    power: Math.floor(base.power * mult),
+                    water: Math.floor(base.water * mult),
                     happiness: Math.floor(base.happiness * (1 + (b.level - 1) * 0.3)),
                     pollution: Math.floor(base.pollution * mult),
                     green: Math.floor(base.green * mult)
@@ -664,187 +1144,171 @@
                 terrain = Array(ROWS).fill().map(() => Array(COLS).fill('grass'));
                 for (let r = 0; r < ROWS; r++) {
                     for (let c = 0; c < COLS; c++) {
-                        const distToRiver = Math.abs(r - c * 0.5 - 4);
-                        if (distToRiver < 0.8 && Math.random() > 0.4) terrain[r][c] = 'water';
-                        else if (Math.random() < 0.06) terrain[r][c] = 'rock';
-                        else if (Math.random() < 0.08) {
+                        const distRiver = Math.abs(r - c * 0.5 - 4);
+                        if (distRiver < 0.8 && Math.random() > 0.5) terrain[r][c] = 'water';
+                        else if (Math.random() < 0.05) terrain[r][c] = 'rock';
+                        else if (Math.random() < 0.06) {
                             terrain[r][c] = 'forest';
                             grid[r][c] = { type: 'tree', level: 1 };
                         }
                     }
                 }
                 for (let r = 10; r <= 14; r++)
-                    for (let c = 10; c <= 14; c++) {
-                        terrain[r][c] = 'grass';
-                        grid[r][c] = null;
-                    }
+                    for (let c = 10; c <= 14; c++) { terrain[r][c] = 'grass'; grid[r][c] = null; }
                 for (let c = 10; c <= 14; c++) grid[12][c] = { type: 'road', level: 1 };
                 for (let r = 10; r <= 14; r++) grid[r][12] = { type: 'road', level: 1 };
             }
 
-            function log(message, type = 'info') {
-                const t = new Date().toLocaleTimeString();
-                logEntries.push({ message, type, time: t });
-                if (logEntries.length > 25) logEntries.shift();
-                const box = document.getElementById('logBox');
-                box.innerHTML = logEntries.map(e => `<div class="log-entry ${e.type}">[${e.time}] ${e.message}</div>`).join('');
-                box.scrollTop = box.scrollHeight;
+            function updateHeaderBadges() {
+                document.getElementById('levelBadge').textContent = `⭐ Lv${cityLevel}`;
+                document.getElementById('prestigeBadge').textContent = `✨ ${prestigePoints} PP`;
+                document.getElementById('prestigePoints').textContent = `${prestigePoints} PP`;
+                if (canPrestige()) {
+                    document.getElementById('prestigeDesc').textContent = `Gain ${getPrestigeGain()} PP`;
+                    document.getElementById('prestigeBtn').disabled = false;
+                } else {
+                    document.getElementById('prestigeDesc').textContent = `Need $50k (${Math.floor((money/50000)*100)}%)`;
+                    document.getElementById('prestigeBtn').disabled = true;
+                }
             }
 
-            function showToast(message, duration = 2500) {
-                const toast = document.getElementById('toast');
-                toast.textContent = message;
-                toast.classList.add('show');
-                clearTimeout(toast._timer);
-                toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+            function renderQuests() {
+                const list = document.getElementById('questList');
+                if (!list) return;
+                const visible = activeQuests.filter(q => !q.completed).slice(0, 3);
+                list.innerHTML = visible.map(q => {
+                    const pct = Math.min(100, (q.progress / q.target) * 100);
+                    return `<div class="quest-item">
+                        <div class="q-title"><span>📜 ${q.title}</span><span>+$${q.reward}</span></div>
+                        <div class="q-desc">${q.desc}</div>
+                        <div class="quest-progress"><div class="quest-progress-bar" style="width:${pct}%"></div></div>
+                    </div>`;
+                }).join('');
+                document.getElementById('questCount').textContent = `${visible.length}/3`;
             }
 
-            // ---------- AGENTS ----------
+            function renderAchievements() {
+                const grid = document.getElementById('achGrid');
+                if (!grid) return;
+                grid.innerHTML = Object.keys(ACHIEVEMENTS).map(key => {
+                    const a = ACHIEVEMENTS[key];
+                    const u = unlockedAchievements[key];
+                    return `<div class="achievement ${u ? 'unlocked' : 'locked'}" title="${a.name}: ${a.desc}">
+                        ${a.icon}
+                        <div class="ach-tooltip">${a.name}: ${a.desc}</div>
+                    </div>`;
+                }).join('');
+                document.getElementById('achCount').textContent = `${Object.keys(unlockedAchievements).length}/${Object.keys(ACHIEVEMENTS).length}`;
+            }
+
+            // ---------- AGENTS (simplified for perf) ----------
             function findRoadCells() {
                 const roads = [];
-                for (let r = 0; r < ROWS; r++)
-                    for (let c = 0; c < COLS; c++)
-                        if (grid[r][c] && grid[r][c].type === 'road') roads.push({ r, c });
+                for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++)
+                    if (grid[r][c] && grid[r][c].type === 'road') roads.push({ r, c });
                 return roads;
             }
 
             function findAdjacentBuildings(r, c) {
-                const neighbors = [];
-                for (let dr = -1; dr <= 1; dr++) {
-                    for (let dc = -1; dc <= 1; dc++) {
-                        if (dr === 0 && dc === 0) continue;
-                        const nr = r + dr, nc = c + dc;
-                        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
-                            const b = grid[nr][nc];
-                            if (b && b.type !== 'road' && b.type !== 'watertower') {
-                                neighbors.push({ r: nr, c: nc, type: b.type, level: b.level });
-                            }
-                        }
+                const n = [];
+                for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    const nr = r + dr, nc = c + dc;
+                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                        const b = grid[nr][nc];
+                        if (b && b.type !== 'road' && b.type !== 'watertower') n.push({ r: nr, c: nc, type: b.type, level: b.level });
                     }
                 }
-                return neighbors;
+                return n;
             }
 
             function spawnAgent() {
                 const roads = findRoadCells();
                 if (roads.length === 0) return;
-                const validRoads = roads.filter(road => findAdjacentBuildings(road.r, road.c).length > 0);
-                if (validRoads.length === 0) return;
-                const road = validRoads[Math.floor(Math.random() * validRoads.length)];
+                const valid = roads.filter(r => findAdjacentBuildings(r.r, r.c).length > 0);
+                if (valid.length === 0) return;
+                const road = valid[Math.floor(Math.random() * valid.length)];
                 const neighbors = findAdjacentBuildings(road.r, road.c);
                 if (neighbors.length === 0) return;
                 const target = neighbors[Math.floor(Math.random() * neighbors.length)];
-                const targetType = target.type;
-
-                let agentType = 'citizen', color = '#81c784', speed = 0.008 + Math.random() * 0.005;
-                if (targetType === 'commercial' || targetType === 'office') { agentType = 'worker'; color = '#4fc3f7'; }
-                else if (targetType === 'industrial') { agentType = 'worker'; color = '#ffb74d'; }
-                else if (targetType === 'park' || targetType === 'tree') { color = '#a5d6a7'; }
-                else if (targetType === 'residential' || targetType === 'apartment') { color = '#ffd54f'; }
-                else if (targetType === 'hospital') { color = '#ffb5d5'; }
-                else if (targetType === 'school') { color = '#b5d5ff'; }
-                else if (targetType === 'stadium') { color = '#d5d5b5'; }
-
-                const vehicleChance = 0.15 + (target.level - 1) * 0.1;
-                if (Math.random() < vehicleChance) {
-                    agentType = 'vehicle';
+                let type = 'citizen', color = '#81c784', speed = 0.008 + Math.random() * 0.005;
+                const t = target.type;
+                if (t === 'commercial' || t === 'office') { type = 'worker'; color = '#4fc3f7'; }
+                else if (t === 'industrial') { type = 'worker'; color = '#ffb74d'; }
+                else if (t === 'park' || t === 'tree') color = '#a5d6a7';
+                else if (t === 'residential' || t === 'apartment') color = '#ffd54f';
+                else if (t === 'hospital') color = '#ffb5d5';
+                else if (t === 'school') color = '#b5d5ff';
+                else if (t === 'stadium') color = '#d5d5b5';
+                if (Math.random() < 0.15 + (target.level - 1) * 0.1) {
+                    type = 'vehicle';
                     const vc = ['#ef5350', '#42a5f5', '#ffca28', '#ab47bc', '#26c6da'];
                     color = vc[Math.floor(Math.random() * vc.length)];
                     speed = 0.014 + Math.random() * 0.008;
                 }
-
                 agents.push({
-                    type: agentType, color, speed,
+                    type, color, speed,
                     homeRoad: { r: road.r, c: road.c },
                     targetBuilding: { r: target.r, c: target.c },
-                    progress: Math.random() * 0.5,
-                    direction: 1,
+                    progress: Math.random() * 0.5, direction: 1,
                     bobPhase: Math.random() * Math.PI * 2,
-                    size: agentType === 'vehicle' ? 5 : 3,
-                    state: 'walking',
-                    pauseTimer: 0,
-                    baseSpeed: speed,
-                    velocity: 0,
-                    targetVelocity: 0,
-                    lifespan: 200 + Math.random() * 400
+                    size: type === 'vehicle' ? 5 : 3,
+                    state: 'walking', pauseTimer: 0,
+                    baseSpeed: speed, velocity: 0,
+                    lifespan: 300 + Math.random() * 400
                 });
             }
 
             function updateAgents(dt) {
-                const targetCount = Math.min(MAX_AGENTS, Math.floor(population / 2) + Math.floor(jobs / 4) + 5);
+                const targetCount = Math.min(MAX_AGENTS, Math.floor(population / 3) + Math.floor(jobs / 5) + 5);
                 while (agents.length < targetCount) {
                     const before = agents.length;
                     spawnAgent();
                     if (agents.length === before) break;
                 }
-                while (agents.length > targetCount + 10) agents.pop();
+                while (agents.length > targetCount + 8) agents.pop();
 
                 for (let i = agents.length - 1; i >= 0; i--) {
                     const a = agents[i];
                     a.lifespan -= dt * gameSpeed;
                     if (a.lifespan < 0) { agents.splice(i, 1); continue; }
-
                     if (a.state === 'visiting') {
                         a.pauseTimer -= dt * gameSpeed;
                         if (a.pauseTimer <= 0) {
-                            if (Math.random() < 0.3) {
-                                a.state = 'returning';
-                                a.direction = -1;
-                            } else {
-                                const neighbors = findAdjacentBuildings(a.homeRoad.r, a.homeRoad.c);
-                                if (neighbors.length > 0) {
-                                    const t = neighbors[Math.floor(Math.random() * neighbors.length)];
+                            if (Math.random() < 0.3) { a.state = 'returning'; a.direction = -1; }
+                            else {
+                                const n = findAdjacentBuildings(a.homeRoad.r, a.homeRoad.c);
+                                if (n.length > 0) {
+                                    const t = n[Math.floor(Math.random() * n.length)];
                                     a.targetBuilding = { r: t.r, c: t.c };
-                                    a.progress = 0;
-                                    a.direction = 1;
-                                    a.state = 'walking';
-                                } else {
-                                    a.state = 'returning';
-                                    a.direction = -1;
-                                }
+                                    a.progress = 0; a.direction = 1; a.state = 'walking';
+                                } else { a.state = 'returning'; a.direction = -1; }
                             }
                         }
                         continue;
                     }
-
                     if (a.type === 'vehicle') {
                         const distToEnd = a.direction > 0 ? (1 - a.progress) : a.progress;
-                        a.targetVelocity = a.baseSpeed * Math.min(1, distToEnd * 4 + 0.3);
-                        a.velocity += (a.targetVelocity - a.velocity) * 0.1 * dt;
+                        const targetVel = a.baseSpeed * Math.min(1, distToEnd * 4 + 0.3);
+                        a.velocity += (targetVel - a.velocity) * 0.1 * dt;
                         a.progress += a.velocity * a.direction * dt * gameSpeed;
                     } else {
                         a.progress += a.baseSpeed * a.direction * dt * gameSpeed;
                     }
-
                     if (a.progress >= 1 && a.direction === 1) {
-                        a.progress = 1;
-                        a.state = 'visiting';
+                        a.progress = 1; a.state = 'visiting';
                         a.pauseTimer = 0.5 + Math.random() * 2;
                     } else if (a.progress <= 0 && a.direction === -1) {
-                        if (Math.random() < 0.2 || agents.length > targetCount) {
-                            agents.splice(i, 1);
-                            continue;
-                        } else {
-                            const neighbors = findAdjacentBuildings(a.homeRoad.r, a.homeRoad.c);
-                            if (neighbors.length > 0) {
-                                const t = neighbors[Math.floor(Math.random() * neighbors.length)];
-                                a.targetBuilding = { r: t.r, c: t.c };
-                                a.progress = 0;
-                                a.direction = 1;
-                                a.state = 'walking';
-                                const tc = {
-                                    commercial: '#4fc3f7', office: '#4fc3f7',
-                                    industrial: '#ffb74d', park: '#a5d6a7', tree: '#a5d6a7',
-                                    hospital: '#ffb5d5', school: '#b5d5ff', stadium: '#d5d5b5',
-                                    residential: '#ffd54f', apartment: '#ffd54f'
-                                };
-                                a.color = tc[t.type] || '#81c784';
-                                a.type = (t.type === 'commercial' || t.type === 'office' || t.type === 'industrial') ? 'worker' : 'citizen';
-                            } else {
-                                agents.splice(i, 1);
-                                continue;
-                            }
-                        }
+                        if (Math.random() < 0.2 || agents.length > targetCount) { agents.splice(i, 1); continue; }
+                        const n = findAdjacentBuildings(a.homeRoad.r, a.homeRoad.c);
+                        if (n.length > 0) {
+                            const t = n[Math.floor(Math.random() * n.length)];
+                            a.targetBuilding = { r: t.r, c: t.c };
+                            a.progress = 0; a.direction = 1; a.state = 'walking';
+                            const tc = { commercial: '#4fc3f7', office: '#4fc3f7', industrial: '#ffb74d', park: '#a5d6a7', tree: '#a5d6a7', hospital: '#ffb5d5', school: '#b5d5ff', stadium: '#d5d5b5', residential: '#ffd54f', apartment: '#ffd54f' };
+                            a.color = tc[t.type] || '#81c784';
+                            a.type = (t.type === 'commercial' || t.type === 'office' || t.type === 'industrial') ? 'worker' : 'citizen';
+                        } else { agents.splice(i, 1); continue; }
                     }
                     a.bobPhase += (a.type === 'vehicle' ? 0.25 : 0.12) * dt * gameSpeed;
                 }
@@ -854,30 +1318,27 @@
                 let pop = 0, jobCount = 0, happy = 70, pollute = 0;
                 let powerProd = 0, powerCons = 0, waterProd = 0, waterCons = 0;
                 let green = 0;
-
+                buildingsByType = {};
                 for (let r = 0; r < ROWS; r++) {
                     for (let c = 0; c < COLS; c++) {
-                        const stats = getBuildingStats(r, c);
-                        if (stats) {
-                            pop += stats.pop;
-                            jobCount += stats.jobs;
-                            happy += stats.happiness;
-                            pollute += stats.pollution;
-                            if (stats.power < 0) powerProd += -stats.power; else powerCons += stats.power;
-                            if (stats.water < 0) waterProd += -stats.water; else waterCons += stats.water;
-                            green += stats.green;
+                        const b = grid[r][c];
+                        if (b) buildingsByType[b.type] = (buildingsByType[b.type] || 0) + 1;
+                        const s = getBuildingStats(r, c);
+                        if (s) {
+                            pop += s.pop; jobCount += s.jobs; happy += s.happiness;
+                            pollute += s.pollution;
+                            if (s.power < 0) powerProd += -s.power; else powerCons += s.power;
+                            if (s.water < 0) waterProd += -s.water; else waterCons += s.water;
+                            green += s.green;
                         }
                     }
                 }
-
-                population = pop;
-                jobs = jobCount;
-                powerProduced = Math.floor(powerProd);
-                powerConsumed = powerCons;
-                waterProduced = Math.floor(waterProd);
-                waterConsumed = waterCons;
+                population = pop; jobs = jobCount;
+                powerProduced = Math.floor(powerProd); powerConsumed = powerCons;
+                waterProduced = Math.floor(waterProd); waterConsumed = waterCons;
                 pollution = Math.max(0, pollute);
                 greenEnergy = Math.min(100, green);
+                peakPopulation = Math.max(peakPopulation, population);
 
                 if (policies.green) happy += 10;
                 if (policies.education) happy += 6;
@@ -885,53 +1346,52 @@
                 if (policies.healthcare) happy += 8;
                 if (policies.recycling) { happy += 3; pollution = Math.max(0, pollution - 5); }
                 if (policies.transit) happy += 5;
-
                 happy += WEATHER_TYPES[weather].happinessMod;
                 happy += SEASONS[season].happinessMod;
-
                 if (powerCons > powerProduced + 5) happy -= 25;
                 if (waterCons > waterProduced + 5) happy -= 25;
                 if (population > 0 && jobs < population * 0.4) happy -= 15;
                 happy -= Math.floor(pollution / 3);
                 happy -= (taxRate - 9) * 1.5;
                 happy += Math.floor(greenEnergy / 15);
-
                 happiness = Math.min(100, Math.max(0, Math.floor(happy)));
                 totalTraffic = Math.min(100, Math.floor(agents.filter(a => a.type === 'vehicle').length * 1.5));
 
-                setStatWithColor('moneyDisplay', `$${money}`, money < 500 ? 'warning' : '');
-                setStatWithColor('popDisplay', population, '');
-                setStatWithColor('jobsDisplay', jobs, jobs < population * 0.4 && population > 0 ? 'warning' : 'good');
-                setStatWithColor('happinessDisplay', `${happiness}%`, happiness < 40 ? 'critical' : happiness < 60 ? 'warning' : 'good');
-                setStatWithColor('powerDisplay', `${powerCons}/${powerProduced}`, powerCons > powerProduced ? 'critical' : 'good');
-                setStatWithColor('waterDisplay', `${waterCons}/${waterProduced}`, waterCons > waterProduced ? 'critical' : 'good');
-                setStatWithColor('pollutionDisplay', pollution, pollution > 40 ? 'critical' : pollution > 20 ? 'warning' : 'good');
-                setStatWithColor('dayDisplay', day, '');
-                setStatWithColor('taxDisplay', `${taxRate}%`, '');
-                setStatWithColor('researchDisplay', researchPoints, '');
-                setStatWithColor('greenDisplay', `${greenEnergy}%`, greenEnergy > 50 ? 'good' : '');
-                setStatWithColor('trafficDisplay', `${totalTraffic}%`, totalTraffic > 70 ? 'warning' : '');
+                setStat('moneyDisplay', `$${money}`, money < 500 ? 'warning' : '');
+                setStat('popDisplay', population, '');
+                setStat('jobsDisplay', jobs, jobs < population * 0.4 && population > 0 ? 'warning' : 'good');
+                setStat('happinessDisplay', `${happiness}%`, happiness < 40 ? 'critical' : happiness < 60 ? 'warning' : 'good');
+                setStat('powerDisplay', `${powerCons}/${powerProduced}`, powerCons > powerProduced ? 'critical' : 'good');
+                setStat('waterDisplay', `${waterCons}/${waterProduced}`, waterCons > waterProduced ? 'critical' : 'good');
+                setStat('pollutionDisplay', pollution, pollution > 40 ? 'critical' : pollution > 20 ? 'warning' : 'good');
+                setStat('dayDisplay', day, '');
+                setStat('taxDisplay', `${taxRate}%`, '');
+                setStat('researchDisplay', researchPoints, '');
+                setStat('greenDisplay', `${greenEnergy}%`, greenEnergy > 50 ? 'good' : '');
+                setStat('trafficDisplay', `${totalTraffic}%`, totalTraffic > 70 ? 'warning' : '');
 
                 const w = WEATHER_TYPES[weather], s = SEASONS[season];
                 document.getElementById('weatherBadge').textContent = `${w.icon} ${w.name}`;
                 document.getElementById('weatherBadge').className = 'header-badge ' + (weather === 'storm' ? 'hot' : weather === 'snow' ? 'cold' : '');
                 document.getElementById('seasonBadge').textContent = `${s.icon} ${s.name}`;
-                const budget = money < 500 ? '⚠️ Low' : money < 2000 ? '📊 Balanced' : '💰 Wealthy';
-                document.getElementById('budgetBadge').textContent = budget;
+                document.getElementById('budgetBadge').textContent = money < 500 ? '⚠️ Low' : money < 2000 ? '📊 Balanced' : '💰 Wealthy';
                 document.getElementById('weatherInfo').textContent = `${w.icon} ${w.name} · ${w.effect}`;
                 document.getElementById('weatherInfo').className = 'weather-badge ' + w.class;
-                document.getElementById('researchPoints').textContent = `${researchPoints} RP`;
 
+                updateHeaderBadges();
                 updateSelectedInfo();
+                updateQuestProgress();
+                checkAchievements();
             }
 
-            function setStatWithColor(id, value, cls) {
+            function setStat(id, value, cls) {
                 const el = document.getElementById(id);
+                if (!el) return;
                 el.textContent = value;
                 el.className = 'stat-value' + (cls ? ' ' + cls : '');
             }
 
-            // ---------- COORDINATE HELPERS (FIXED) ----------
+            // ---------- COORDINATE HELPERS ----------
             function isoToWorld(col, row) {
                 return {
                     x: BASE_X + (col - row) * (TILE_W / 2),
@@ -939,32 +1399,34 @@
                 };
             }
 
-            // Convert client (mouse) coordinates to canvas pixel coordinates
-            function clientToCanvas(clientX, clientY) {
+            function getCanvasMousePos(clientX, clientY) {
                 const rect = canvas.getBoundingClientRect();
                 return {
-                    x: (clientX - rect.left) * (canvas.width / rect.width),
-                    y: (clientY - rect.top) * (canvas.height / rect.height)
+                    x: (clientX - rect.left),
+                    y: (clientY - rect.top)
                 };
             }
 
-            // Convert canvas pixel coordinates to world coordinates (accounting for zoom/pan)
-            function canvasToWorld(cx, cy) {
+            function screenToWorld(sx, sy) {
+                // Canvas CSS pixel to world coordinate
                 return {
-                    x: (cx - canvas.width / 2) / zoom + camX,
-                    y: (cy - canvas.height / 2) / zoom + camY
+                    x: (sx - canvasW / 2) / zoom + camX,
+                    y: (sy - canvasH / 2) / zoom + camY
                 };
             }
 
-            // Convert canvas pixel coordinates to grid cell
-            function canvasToGrid(cx, cy) {
-                const w = canvasToWorld(cx, cy);
+            function worldToScreen(wx, wy) {
+                return {
+                    x: (wx - camX) * zoom + canvasW / 2,
+                    y: (wy - camY) * zoom + canvasH / 2
+                };
+            }
+
+            function screenToGrid(sx, sy) {
+                const w = screenToWorld(sx, sy);
                 const dx = w.x - BASE_X, dy = w.y - BASE_Y;
                 const a = dx / (TILE_W / 2), b = dy / (TILE_H / 2);
-                return {
-                    col: Math.round((a + b) / 2),
-                    row: Math.round((b - a) / 2)
-                };
+                return { col: Math.round((a + b) / 2), row: Math.round((b - a) / 2) };
             }
 
             // ---------- DRAWING ----------
@@ -986,13 +1448,11 @@
             }
 
             function drawTerrain(wx, wy, terr, isNight) {
-                const h = 3;
                 let top, left, right, stroke;
                 if (terr === 'water') {
-                    const shimmer = Math.sin(time * 0.03 + wx * 0.05) * 0.1;
-                    top = isNight ? '#0a2a45' : `rgb(${30 + shimmer * 30}, ${90 + shimmer * 30}, ${140 + shimmer * 30})`;
-                    left = isNight ? '#061a30' : '#1a4a70';
-                    right = isNight ? '#041220' : '#123a58';
+                    const sh = Math.sin(time * 0.03 + wx * 0.05) * 0.1;
+                    top = isNight ? '#0a2a45' : `rgb(${30 + sh * 30}, ${90 + sh * 30}, ${140 + sh * 30})`;
+                    left = isNight ? '#061a30' : '#1a4a70'; right = isNight ? '#041220' : '#123a58';
                     stroke = isNight ? '#1a4060' : '#3a6a90';
                 } else if (terr === 'rock') {
                     top = isNight ? '#2a2a30' : '#5a5a60';
@@ -1006,26 +1466,20 @@
                     right = isNight ? '#06120c' : '#173a20';
                     stroke = isNight ? '#1a3a25' : '#3a7045';
                 }
+                drawTileWorld(wx, wy, top, left, right, stroke);
+            }
+
+            function drawStar(cx, cy, r1, r2, color) {
                 ctx.beginPath();
-                ctx.moveTo(wx - TILE_W/2, wy + TILE_H/2); ctx.lineTo(wx, wy + TILE_H);
-                ctx.lineTo(wx, wy + TILE_H + h); ctx.lineTo(wx - TILE_W/2, wy + TILE_H/2 + h);
-                ctx.closePath(); ctx.fillStyle = left; ctx.fill();
-                ctx.beginPath();
-                ctx.moveTo(wx + TILE_W/2, wy + TILE_H/2); ctx.lineTo(wx, wy + TILE_H);
-                ctx.lineTo(wx, wy + TILE_H + h); ctx.lineTo(wx + TILE_W/2, wy + TILE_H/2 + h);
-                ctx.closePath(); ctx.fillStyle = right; ctx.fill();
-                ctx.beginPath();
-                ctx.moveTo(wx, wy); ctx.lineTo(wx + TILE_W/2, wy + TILE_H/2);
-                ctx.lineTo(wx, wy + TILE_H); ctx.lineTo(wx - TILE_W/2, wy + TILE_H/2);
-                ctx.closePath(); ctx.fillStyle = top; ctx.fill();
-                ctx.strokeStyle = stroke; ctx.lineWidth = 0.5; ctx.stroke();
-                if (terr === 'water' && !isNight) {
-                    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 0.8;
-                    ctx.beginPath();
-                    const shimmerX = wx + Math.sin(time * 0.05 + wx * 0.1) * 3;
-                    ctx.moveTo(shimmerX - 6, wy + TILE_H/2); ctx.lineTo(shimmerX + 6, wy + TILE_H/2);
-                    ctx.stroke();
+                for (let i = 0; i < 5; i++) {
+                    const a = (Math.PI / 2) + i * (Math.PI * 2 / 5);
+                    const a2 = a + Math.PI / 5;
+                    ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+                    ctx.lineTo(cx + Math.cos(a2) * r2, cy + Math.sin(a2) * r2);
                 }
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
             }
 
             function drawBuildingWorld(col, row, type, level) {
@@ -1043,12 +1497,12 @@
                 ctx.closePath(); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
 
                 const isNight = currentTime === 'night' || currentTime === 'dusk';
-                let topColor, leftColor, rightColor;
-                if (type === 'road') { topColor = isNight ? '#2a3540' : '#3a4a55'; leftColor = '#25323a'; rightColor = '#1d2830'; }
-                else if (type === 'park') { topColor = isNight ? '#2a5a3a' : '#3f8a5a'; leftColor = '#2a5a3a'; rightColor = '#1d4028'; }
-                else if (type === 'tree') { topColor = '#1a4a2a'; leftColor = '#123a1e'; rightColor = '#0d2a15'; }
-                else { topColor = isNight ? '#1e3545' : '#2d4a5a'; leftColor = '#1a2f3c'; rightColor = '#152630'; }
-                drawTileWorld(w.x, w.y, topColor, leftColor, rightColor, isNight ? '#3a5a70' : '#4f7f9a');
+                let topC, leftC, rightC;
+                if (type === 'road') { topC = isNight ? '#2a3540' : '#3a4a55'; leftC = '#25323a'; rightC = '#1d2830'; }
+                else if (type === 'park') { topC = isNight ? '#2a5a3a' : '#3f8a5a'; leftC = '#2a5a3a'; rightC = '#1d4028'; }
+                else if (type === 'tree') { topC = '#1a4a2a'; leftC = '#123a1e'; rightC = '#0d2a15'; }
+                else { topC = isNight ? '#1e3545' : '#2d4a5a'; leftC = '#1a2f3c'; rightC = '#152630'; }
+                drawTileWorld(w.x, w.y, topC, leftC, rightC, isNight ? '#3a5a70' : '#4f7f9a');
 
                 if (type === 'road') {
                     ctx.strokeStyle = isNight ? '#8a8a5a' : '#e6e6b3';
@@ -1059,7 +1513,6 @@
                     ctx.stroke(); ctx.setLineDash([]);
                     return;
                 }
-
                 if (type === 'tree') {
                     ctx.fillStyle = '#3a2a1a';
                     ctx.fillRect(w.x - 2, w.y + TILE_H/2 - 4, 4, 12);
@@ -1071,13 +1524,12 @@
                 }
 
                 const lx = w.x - TILE_W/4, rx = w.x + TILE_W/4, my = w.y + TILE_H/2;
-                const windowColor = isNight ? '#ffd700' : '#f5e56b';
+                const winC = isNight ? '#ffd700' : '#f5e56b';
 
                 if (level >= 2) {
                     ctx.shadowColor = level === 3 ? '#ffd700' : '#c0c0ff';
                     ctx.shadowBlur = level === 3 ? 15 : 8;
                 }
-
                 ctx.fillStyle = b.color;
                 ctx.beginPath();
                 ctx.moveTo(lx, my - 4); ctx.lineTo(rx, my - 4);
@@ -1090,28 +1542,20 @@
                     ctx.beginPath();
                     ctx.moveTo(lx - 3, my - 4 - bh); ctx.lineTo(w.x, my - 4 - bh - 14); ctx.lineTo(rx + 3, my - 4 - bh);
                     ctx.closePath(); ctx.fill();
-                    ctx.fillStyle = windowColor;
-                    ctx.shadowColor = windowColor; ctx.shadowBlur = isNight ? 6 : 0;
+                    ctx.fillStyle = winC;
                     const rows = type === 'apartment' ? 5 : 2;
                     for (let wy = 0; wy < rows; wy++)
                         for (let wx = 0; wx < 3; wx++)
                             if (Math.random() > 0.15 || !isNight)
                                 ctx.fillRect(lx + 4 + wx * 10, my - 12 - wy * 7, 6, 5);
-                    ctx.shadowBlur = 0;
                 } else if (type === 'commercial' || type === 'office') {
-                    ctx.fillStyle = windowColor;
-                    ctx.shadowColor = '#ff9800'; ctx.shadowBlur = isNight ? 12 : 0;
+                    ctx.fillStyle = winC;
                     ctx.fillRect(lx + 5, my - 12, 14, 8);
-                    ctx.shadowBlur = 0;
                     ctx.fillStyle = b.roofColor;
                     ctx.fillRect(lx - 2, my - 4 - bh - 3, rx - lx + 4, 3);
                     if (type === 'office') {
-                        ctx.fillStyle = '#ff4444';
-                        ctx.fillRect(w.x - 1, my - 4 - bh - 10, 2, 10);
                         ctx.fillStyle = isNight ? '#ff0000' : '#aa0000';
-                        ctx.shadowColor = '#ff0000'; ctx.shadowBlur = isNight ? 8 : 0;
                         ctx.beginPath(); ctx.arc(w.x, my - 4 - bh - 10, 2, 0, Math.PI * 2); ctx.fill();
-                        ctx.shadowBlur = 0;
                     }
                 } else if (type === 'industrial') {
                     ctx.fillStyle = b.roofColor;
@@ -1119,11 +1563,9 @@
                     ctx.fillStyle = '#4f3e2e';
                     ctx.fillRect(w.x - 4, my - 4 - bh - 14, 8, 14);
                     ctx.fillStyle = isNight ? '#4a4a4a' : '#c0c0c0';
-                    ctx.shadowColor = '#888888'; ctx.shadowBlur = 8;
                     ctx.beginPath();
                     ctx.arc(w.x + Math.sin(time * 0.05) * 3, my - 4 - bh - 20, 6, 0, Math.PI * 2);
-                    ctx.arc(w.x - 7, my - 4 - bh - 26, 5, 0, Math.PI * 2);
-                    ctx.fill(); ctx.shadowBlur = 0;
+                    ctx.fill();
                 } else if (type === 'powerplant') {
                     ctx.fillStyle = '#6a5a4a';
                     ctx.beginPath();
@@ -1131,19 +1573,16 @@
                     ctx.arc(rx - 4, my - 4 - bh + 4, 8, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.fillStyle = '#ffff00';
-                    ctx.shadowColor = '#ffff00'; ctx.shadowBlur = 15;
                     ctx.beginPath();
                     ctx.moveTo(w.x - 5, my - 15); ctx.lineTo(w.x + 5, my - 15);
                     ctx.lineTo(w.x - 2, my - 8); ctx.lineTo(w.x + 8, my - 8);
                     ctx.lineTo(w.x - 5, my - 22); ctx.lineTo(w.x - 1, my - 14);
-                    ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+                    ctx.closePath(); ctx.fill();
                 } else if (type === 'solar') {
                     ctx.fillStyle = '#1a3a5a';
                     ctx.beginPath(); ctx.ellipse(w.x, my - 4 - bh + 4, 18, 10, 0, 0, Math.PI * 2); ctx.fill();
                     ctx.fillStyle = isNight ? '#0a1a2a' : '#3a6a9a';
                     ctx.beginPath(); ctx.ellipse(w.x - 6, my - 4 - bh + 2, 10, 6, 0, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = '#4a6a8a';
-                    ctx.fillRect(w.x - 2, my - 4, 4, bh);
                 } else if (type === 'watertower') {
                     ctx.fillStyle = '#4a6a8a';
                     ctx.beginPath();
@@ -1152,8 +1591,6 @@
                     ctx.closePath(); ctx.fill();
                     ctx.fillStyle = b.color;
                     ctx.beginPath(); ctx.arc(w.x, my - 18, 14, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                    ctx.beginPath(); ctx.arc(w.x - 3, my - 22, 5, 0, Math.PI * 2); ctx.fill();
                 } else if (type === 'park') {
                     ctx.strokeStyle = '#c0a060'; ctx.lineWidth = 2;
                     ctx.beginPath();
@@ -1162,11 +1599,7 @@
                     ctx.fillStyle = '#5d3a1a';
                     ctx.fillRect(w.x - 2, my - 4, 4, 8);
                     ctx.fillStyle = isNight ? '#1a5a35' : '#2f7a4a';
-                    ctx.shadowColor = isNight ? '#1a5a35' : '#74c48c'; ctx.shadowBlur = 10;
                     ctx.beginPath(); ctx.arc(w.x, my - 10, 10, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = isNight ? '#1a5a35' : '#3f8a5a';
-                    ctx.beginPath(); ctx.arc(w.x - 9, my - 6, 7, 0, Math.PI * 2); ctx.fill();
-                    ctx.shadowBlur = 0;
                 } else if (type === 'hospital') {
                     ctx.fillStyle = '#f0f0f0';
                     ctx.beginPath();
@@ -1174,18 +1607,14 @@
                     ctx.lineTo(rx, my - 4 - bh); ctx.lineTo(lx, my - 4 - bh);
                     ctx.closePath(); ctx.fill();
                     ctx.fillStyle = '#ff3333';
-                    ctx.shadowColor = '#ff0000'; ctx.shadowBlur = isNight ? 15 : 5;
                     ctx.fillRect(w.x - 3, my - 4 - bh + 8, 6, 14);
                     ctx.fillRect(w.x - 9, my - 4 - bh + 12, 18, 6);
-                    ctx.shadowBlur = 0;
                 } else if (type === 'school') {
                     ctx.fillStyle = '#85a5df';
                     ctx.beginPath();
                     ctx.moveTo(lx, my - 4); ctx.lineTo(rx, my - 4);
                     ctx.lineTo(rx, my - 4 - bh); ctx.lineTo(lx, my - 4 - bh);
                     ctx.closePath(); ctx.fill();
-                    ctx.fillStyle = '#5a7abf';
-                    ctx.fillRect(lx - 2, my - 4 - bh - 3, rx - lx + 4, 3);
                     ctx.fillStyle = '#a5c5ff';
                     ctx.fillRect(w.x - 3, my - 4 - bh - 10, 6, 10);
                     ctx.fillStyle = '#ffdd44';
@@ -1197,31 +1626,19 @@
                     ctx.beginPath(); ctx.ellipse(w.x, my - 4 - bh/2, 16, 9, 0, 0, Math.PI * 2); ctx.fill();
                     ctx.fillStyle = '#3f8a5a';
                     ctx.beginPath(); ctx.ellipse(w.x, my - 4 - bh/2, 12, 6, 0, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = isNight ? '#ffff88' : '#888888';
-                    ctx.shadowColor = '#ffff00'; ctx.shadowBlur = isNight ? 15 : 0;
-                    ctx.beginPath();
-                    ctx.arc(w.x - 18, my - 4 - bh/2 - 8, 2, 0, Math.PI * 2);
-                    ctx.arc(w.x + 18, my - 4 - bh/2 - 8, 2, 0, Math.PI * 2);
-                    ctx.fill(); ctx.shadowBlur = 0;
                 } else if (type === 'subway') {
                     ctx.fillStyle = '#7070a0';
                     ctx.fillRect(lx + 4, my - 4 - bh, rx - lx - 8, bh);
-                    ctx.fillStyle = '#505080';
-                    ctx.fillRect(lx + 6, my - 4 - bh - 4, rx - lx - 12, 4);
                     ctx.fillStyle = '#ffffff';
                     ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
                     ctx.fillText('M', w.x, my - 8);
                 }
 
                 if (level > 1) {
-                    ctx.shadowBlur = 0;
-                    ctx.fillStyle = level === 3 ? '#ffd700' : '#c0c0ff';
                     const starY = my - 4 - bh - 6;
-                    for (let i = 0; i < level; i++) {
+                    for (let i = 0; i < level; i++)
                         drawStar(w.x - 5 + i * 5, starY, 3, 5, level === 3 ? '#ffd700' : '#c0c0ff');
-                    }
                 }
-
                 if (selectedCell && selectedCell.r === row && selectedCell.c === col) {
                     ctx.strokeStyle = '#ffd700';
                     ctx.lineWidth = 3 / zoom;
@@ -1234,44 +1651,26 @@
                 }
             }
 
-            function drawStar(cx, cy, r1, r2, color) {
-                ctx.beginPath();
-                for (let i = 0; i < 5; i++) {
-                    const angle = (Math.PI / 2) + i * (Math.PI * 2 / 5);
-                    const angle2 = angle + Math.PI / 5;
-                    ctx.lineTo(cx + Math.cos(angle) * r1, cy + Math.sin(angle) * r1);
-                    ctx.lineTo(cx + Math.cos(angle2) * r2, cy + Math.sin(angle2) * r2);
-                }
-                ctx.closePath();
-                ctx.fillStyle = color;
-                ctx.fill();
-            }
-
             function drawWeather() {
                 if (weather === 'rain' || weather === 'storm') {
                     ctx.strokeStyle = 'rgba(180, 220, 255, 0.5)';
                     ctx.lineWidth = 1;
-                    const intensity = weather === 'storm' ? 80 : 40;
+                    const intensity = weather === 'storm' ? 60 : 30;
                     for (let i = 0; i < intensity; i++) {
-                        const x = (i * 137 + time * 3) % canvas.width;
-                        const y = (i * 293 + time * 15) % canvas.height;
+                        const x = (i * 137 + time * 3) % canvasW;
+                        const y = (i * 293 + time * 15) % canvasH;
                         ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 3, y + 10); ctx.stroke();
                     }
                 } else if (weather === 'snow') {
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                    for (let i = 0; i < 60; i++) {
-                        const x = (i * 137 + Math.sin(time * 0.02 + i) * 30) % canvas.width;
-                        const y = (i * 293 + time * 2) % canvas.height;
+                    for (let i = 0; i < 40; i++) {
+                        const x = (i * 137 + Math.sin(time * 0.02 + i) * 30) % canvasW;
+                        const y = (i * 293 + time * 2) % canvasH;
                         ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
                     }
                 } else if (weather === 'fog') {
                     ctx.fillStyle = 'rgba(200, 220, 230, 0.15)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = 'rgba(200, 220, 230, 0.08)';
-                    for (let i = 0; i < 5; i++) {
-                        const offset = Math.sin(time * 0.01 + i) * 50;
-                        ctx.fillRect(0, (canvas.height / 5) * i + offset, canvas.width, 80);
-                    }
+                    ctx.fillRect(0, 0, canvasW, canvasH);
                 }
             }
 
@@ -1282,47 +1681,47 @@
                 else if (currentTime === 'dusk') { skyTop = '#2a0a1a'; skyBottom = '#7a3a2a'; }
                 else { skyTop = '#030810'; skyBottom = '#08141c'; }
 
-                const sg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                const sg = ctx.createLinearGradient(0, 0, 0, canvasH);
                 sg.addColorStop(0, skyTop); sg.addColorStop(1, skyBottom);
-                ctx.fillStyle = sg; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = sg; ctx.fillRect(0, 0, canvasW, canvasH);
 
                 if (currentTime !== 'day') {
                     const starAlpha = currentTime === 'night' ? 0.8 : 0.4;
                     ctx.fillStyle = `rgba(255,255,255,${starAlpha})`;
-                    for (let i = 0; i < 120; i++) {
-                        const sx = (i * 137 * 7919) % canvas.width;
-                        const sy = (i * 137 * 104729) % (canvas.height * 0.5);
-                        const size = 0.5 + (i % 4) * 0.4;
-                        ctx.beginPath(); ctx.arc(sx, sy, size, 0, Math.PI * 2); ctx.fill();
+                    for (let i = 0; i < 80; i++) {
+                        const sx = (i * 137 * 7919) % canvasW;
+                        const sy = (i * 137 * 104729) % (canvasH * 0.5);
+                        ctx.beginPath(); ctx.arc(sx, sy, 0.5 + (i % 4) * 0.4, 0, Math.PI * 2); ctx.fill();
                     }
                 }
 
                 if (currentTime === 'day') {
-                    const sunGrad = ctx.createRadialGradient(760, 90, 5, 760, 90, 70);
+                    const sunGrad = ctx.createRadialGradient(canvasW - 80, 60, 5, canvasW - 80, 60, 50);
                     sunGrad.addColorStop(0, '#ffff88'); sunGrad.addColorStop(0.5, '#ffdd44'); sunGrad.addColorStop(1, 'rgba(255,200,50,0)');
-                    ctx.fillStyle = sunGrad; ctx.beginPath(); ctx.arc(760, 90, 70, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = '#ffffaa'; ctx.beginPath(); ctx.arc(760, 90, 22, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = sunGrad; ctx.beginPath(); ctx.arc(canvasW - 80, 60, 50, 0, Math.PI * 2); ctx.fill();
                 } else if (currentTime === 'night') {
-                    const moonGrad = ctx.createRadialGradient(760, 90, 5, 760, 90, 55);
+                    const moonGrad = ctx.createRadialGradient(canvasW - 80, 60, 5, canvasW - 80, 60, 40);
                     moonGrad.addColorStop(0, '#ffffff'); moonGrad.addColorStop(0.5, '#ddeeff'); moonGrad.addColorStop(1, 'rgba(180,220,255,0)');
-                    ctx.fillStyle = moonGrad; ctx.beginPath(); ctx.arc(760, 90, 55, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = '#f0f8ff'; ctx.beginPath(); ctx.arc(760, 90, 18, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = moonGrad; ctx.beginPath(); ctx.arc(canvasW - 80, 60, 40, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#f0f8ff'; ctx.beginPath(); ctx.arc(canvasW - 80, 60, 14, 0, Math.PI * 2); ctx.fill();
                 }
 
-                // ---------- APPLY CAMERA TRANSFORM (FIXED) ----------
+                // ---------- WORLD TRANSFORM ----------
                 ctx.save();
-                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.translate(canvasW / 2, canvasH / 2);
                 ctx.scale(zoom, zoom);
                 ctx.translate(-camX, -camY);
 
                 const isNight = currentTime === 'night';
 
+                // Terrain
                 for (let r = 0; r < ROWS; r++)
                     for (let c = 0; c < COLS; c++) {
                         const w = isoToWorld(c, r);
                         drawTerrain(w.x, w.y, terrain[r][c], isNight);
                     }
 
+                // Empty grid overlay
                 for (let r = 0; r < ROWS; r++)
                     for (let c = 0; c < COLS; c++) {
                         if (terrain[r][c] === 'water') continue;
@@ -1337,6 +1736,7 @@
                         }
                     }
 
+                // Buildings (sorted by depth)
                 const cells = [];
                 for (let r = 0; r < ROWS; r++)
                     for (let c = 0; c < COLS; c++)
@@ -1347,12 +1747,12 @@
                     drawBuildingWorld(cell.c, cell.r, b.type, b.level);
                 }
 
+                // Agents
                 const sortedAgents = [...agents].sort((a, b) => {
                     const ay = a.homeRoad.r + a.homeRoad.c + (a.targetBuilding.r + a.targetBuilding.c - a.homeRoad.r - a.homeRoad.c) * a.progress;
                     const by = b.homeRoad.r + b.homeRoad.c + (b.targetBuilding.r + b.targetBuilding.c - b.homeRoad.r - b.homeRoad.c) * b.progress;
                     return ay - by;
                 });
-
                 for (const a of sortedAgents) {
                     const rp = isoToWorld(a.homeRoad.c, a.homeRoad.r);
                     const bp = isoToWorld(a.targetBuilding.c, a.targetBuilding.r);
@@ -1382,33 +1782,18 @@
                         ctx.arc(x - w/3, y + h/2 - 0.5, 1.4, 0, Math.PI * 2);
                         ctx.arc(x + w/3, y + h/2 - 0.5, 1.4, 0, Math.PI * 2);
                         ctx.fill();
-                        if (a.state === 'visiting' || a.velocity < a.baseSpeed * 0.5) {
-                            ctx.fillStyle = '#ff2222';
-                            ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 6;
-                            ctx.beginPath();
-                            ctx.arc(x + w/2, y, 1.2, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.shadowBlur = 0;
-                        }
                         if (isNight || currentTime === 'dusk') {
                             ctx.fillStyle = '#ffff99';
-                            ctx.shadowColor = '#ffff00'; ctx.shadowBlur = 8;
-                            ctx.beginPath();
-                            ctx.arc(x - w/2, y, 1.5, 0, Math.PI * 2);
-                            ctx.fill();
+                            ctx.shadowColor = '#ffff00'; ctx.shadowBlur = 6;
+                            ctx.beginPath(); ctx.arc(x - w/2, y, 1.5, 0, Math.PI * 2); ctx.fill();
                             ctx.shadowBlur = 0;
                         }
                     } else {
                         ctx.fillStyle = a.color;
-                        ctx.beginPath();
-                        ctx.arc(x, y - a.size/2, a.size * 0.7, 0, Math.PI * 2);
-                        ctx.fill();
+                        ctx.beginPath(); ctx.arc(x, y - a.size/2, a.size * 0.7, 0, Math.PI * 2); ctx.fill();
                         ctx.fillStyle = '#ffe0b2';
-                        ctx.beginPath();
-                        ctx.arc(x, y - a.size * 1.4, a.size * 0.5, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.strokeStyle = '#222';
-                        ctx.lineWidth = 1;
+                        ctx.beginPath(); ctx.arc(x, y - a.size * 1.4, a.size * 0.5, 0, Math.PI * 2); ctx.fill();
+                        ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
                         const swing = Math.sin(a.bobPhase) * 1.8 * (a.state === 'visiting' ? 0.2 : 1);
                         ctx.beginPath();
                         ctx.moveTo(x - 0.8, y); ctx.lineTo(x - 0.8 + swing, y + a.size * 0.7);
@@ -1417,6 +1802,7 @@
                     }
                 }
 
+                // Hover highlight
                 if (hoverCol !== null && hoverRow !== null && hoverCol >= 0 && hoverCol < COLS && hoverRow >= 0 && hoverRow < ROWS) {
                     const w = isoToWorld(hoverCol, hoverRow);
                     const canBuild = terrain[hoverRow][hoverCol] !== 'water';
@@ -1433,69 +1819,61 @@
 
                 ctx.restore();
 
-                if (currentTime === 'night') { ctx.fillStyle = 'rgba(0,10,30,0.35)'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
-                else if (currentTime === 'dusk') { ctx.fillStyle = 'rgba(120,40,20,0.18)'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
-                else if (currentTime === 'dawn') { ctx.fillStyle = 'rgba(60,20,80,0.18)'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+                // Overlays
+                if (currentTime === 'night') { ctx.fillStyle = 'rgba(0,10,30,0.35)'; ctx.fillRect(0, 0, canvasW, canvasH); }
+                else if (currentTime === 'dusk') { ctx.fillStyle = 'rgba(120,40,20,0.18)'; ctx.fillRect(0, 0, canvasW, canvasH); }
+                else if (currentTime === 'dawn') { ctx.fillStyle = 'rgba(60,20,80,0.18)'; ctx.fillRect(0, 0, canvasW, canvasH); }
 
                 drawWeather();
 
-                const vig = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 200, canvas.width/2, canvas.height/2, 650);
+                const vig = ctx.createRadialGradient(canvasW/2, canvasH/2, Math.min(canvasW, canvasH) * 0.3, canvasW/2, canvasH/2, Math.max(canvasW, canvasH) * 0.7);
                 vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.5)');
-                ctx.fillStyle = vig; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = vig; ctx.fillRect(0, 0, canvasW, canvasH);
             }
 
             function updateSelectedInfo() {
                 const info = document.getElementById('selectedInfo');
                 const upgradeBtn = document.getElementById('upgradeBtn');
                 const demolishBtn = document.getElementById('demolishBtn');
-
                 if (!selectedCell) {
-                    info.innerHTML = '<span class="name">None selected</span> · Click a building on the map';
-                    upgradeBtn.disabled = true;
-                    upgradeBtn.textContent = '⬆️ Upgrade (—)';
+                    info.innerHTML = '<span class="name">None</span>';
+                    upgradeBtn.disabled = true; upgradeBtn.textContent = '⬆️ Upgrade';
                     demolishBtn.disabled = true;
                     return;
                 }
-
                 const b = grid[selectedCell.r][selectedCell.c];
                 if (!b) {
-                    info.innerHTML = '<span class="name">Empty tile</span> · Nothing to upgrade';
-                    upgradeBtn.disabled = true;
-                    upgradeBtn.textContent = '⬆️ Upgrade (—)';
+                    info.innerHTML = '<span class="name">Empty tile</span>';
+                    upgradeBtn.disabled = true; upgradeBtn.textContent = '⬆️ Upgrade';
                     demolishBtn.disabled = true;
                     return;
                 }
-
                 const base = BUILDINGS[b.type];
-                const displayName = b.type.charAt(0).toUpperCase() + b.type.slice(1);
-                info.innerHTML = `<span class="name">${displayName}</span> · <span class="level">Level ${b.level}</span>`;
-
+                const name = b.type.charAt(0).toUpperCase() + b.type.slice(1);
+                info.innerHTML = `<span class="name">${name}</span> · <span class="level">Lv${b.level}</span>`;
                 if (b.level < 3 && b.type !== 'road' && b.type !== 'tree') {
-                    const upgradeCost = Math.floor(base.cost * UPGRADE_COSTS[b.level]);
-                    upgradeBtn.disabled = money < upgradeCost;
-                    upgradeBtn.textContent = `⬆️ Upgrade ($${upgradeCost})`;
+                    const cost = Math.floor(base.cost * UPGRADE_COSTS[b.level]);
+                    upgradeBtn.disabled = money < cost;
+                    upgradeBtn.textContent = `⬆️ $${cost}`;
                 } else {
                     upgradeBtn.disabled = true;
-                    upgradeBtn.textContent = b.level >= 3 ? '✅ MAX LEVEL' : '⬆️ Upgrade (—)';
+                    upgradeBtn.textContent = b.level >= 3 ? '✅ MAX' : '⬆️ N/A';
                 }
-
                 demolishBtn.disabled = false;
             }
 
+            // ---------- INPUT HANDLING ----------
             function handleClick(clientX, clientY) {
-                const c = clientToCanvas(clientX, clientY);
-                const { col, row } = canvasToGrid(c.x, c.y);
+                const p = getCanvasMousePos(clientX, clientY);
+                const { col, row } = screenToGrid(p.x, p.y);
                 if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return;
-
                 const existing = grid[row][col];
-
                 if (existing) {
                     selectedCell = { r: row, c: col };
                     AudioEngine.playSFX('select');
                     updateSelectedInfo();
                     return;
                 }
-
                 if (terrain[row][col] === 'water') {
                     AudioEngine.playSFX('error');
                     showToast('🚫 Cannot build on water!', 1500);
@@ -1505,26 +1883,18 @@
                 if (!b) return;
                 if (money < b.cost) {
                     AudioEngine.playSFX('error');
-                    canvas.style.filter = 'brightness(1.3) hue-rotate(-20deg)';
-                    setTimeout(() => canvas.style.filter = 'brightness(1)', 150);
                     showToast('💸 Not enough money!', 1500);
                     return;
                 }
                 money -= b.cost;
                 grid[row][col] = { type: currentTool, level: 1 };
+                totalBuildingsPlaced++;
                 selectedCell = { r: row, c: col };
-                canvas.style.filter = 'brightness(1.2)';
-                setTimeout(() => canvas.style.filter = 'brightness(1)', 100);
                 recalcStats();
-                if (currentTool === 'road') {
-                    for (let i = 0; i < 4; i++) spawnAgent();
-                    AudioEngine.playSFX('build');
-                } else if (currentTool === 'park' || currentTool === 'tree') {
-                    AudioEngine.playSFX('build');
-                    showToast('🌿 +Happiness!', 1000);
-                } else {
-                    AudioEngine.playSFX('build');
-                }
+                if (currentTool === 'road') for (let i = 0; i < 3; i++) spawnAgent();
+                if (currentTool === 'park' || currentTool === 'tree') showToast('🌿 +Happiness!', 1000);
+                AudioEngine.playSFX('build');
+                addXP(5 + Math.floor(b.cost / 20));
                 updateSelectedInfo();
             }
 
@@ -1533,23 +1903,24 @@
                 const b = grid[selectedCell.r][selectedCell.c];
                 if (!b || b.level >= 3) return;
                 if (b.type === 'road' || b.type === 'tree') {
-                    showToast('🚫 Cannot upgrade this!', 1500);
+                    showToast('🚫 Cannot upgrade!', 1500);
                     AudioEngine.playSFX('error');
                     return;
                 }
-                const base = BUILDINGS[b.type];
-                const cost = Math.floor(base.cost * UPGRADE_COSTS[b.level]);
+                const cost = Math.floor(BUILDINGS[b.type].cost * UPGRADE_COSTS[b.level]);
                 if (money < cost) {
                     AudioEngine.playSFX('error');
-                    showToast(`💸 Need $${cost} to upgrade!`, 1800);
+                    showToast(`💸 Need $${cost}!`, 1800);
                     return;
                 }
                 money -= cost;
                 b.level++;
-                log(`⬆️ ${b.type} upgraded to Level ${b.level}! -$${cost}`, 'good');
-                showToast(`⬆️ Upgraded to Level ${b.level}!`, 2000);
+                totalUpgrades++;
+                log(`⬆️ ${b.type} → Lv${b.level}! -$${cost}`, 'good');
+                showToast(`⬆️ Level ${b.level}!`, 2000);
                 AudioEngine.playSFX('upgrade');
-                for (let i = 0; i < 3; i++) spawnAgent();
+                for (let i = 0; i < 2; i++) spawnAgent();
+                addXP(20 * b.level);
                 recalcStats();
                 updateSelectedInfo();
             }
@@ -1560,8 +1931,8 @@
                 if (!b) return;
                 const refund = Math.floor(BUILDINGS[b.type].cost * 0.4 * b.level);
                 money += refund;
-                log(`🗑️ Demolished ${b.type} for $${refund}`, 'info');
-                showToast(`🗑️ +$${refund} refund`, 1800);
+                log(`🗑️ Demolished ${b.type} +$${refund}`, 'info');
+                showToast(`🗑️ +$${refund}`, 1800);
                 grid[selectedCell.r][selectedCell.c] = null;
                 AudioEngine.playSFX('demolish');
                 selectedCell = null;
@@ -1569,28 +1940,27 @@
                 updateSelectedInfo();
             }
 
-            // ---------- MOUSE EVENTS (FIXED ZOOM) ----------
+            // Mouse events
             canvas.addEventListener('mousedown', e => {
                 if (e.button === 0) {
                     isPanning = true; panMoved = false;
-                    const c = clientToCanvas(e.clientX, e.clientY);
-                    panStartX = c.x; panStartY = c.y;
+                    const p = getCanvasMousePos(e.clientX, e.clientY);
+                    panStartX = p.x; panStartY = p.y;
                     camStartX = camX; camStartY = camY;
                 }
             });
 
             canvas.addEventListener('mousemove', e => {
-                const c = clientToCanvas(e.clientX, e.clientY);
+                const p = getCanvasMousePos(e.clientX, e.clientY);
                 if (isPanning) {
-                    const dx = c.x - panStartX, dy = c.y - panStartY;
+                    const dx = p.x - panStartX, dy = p.y - panStartY;
                     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) panMoved = true;
                     camX = camStartX - dx / zoom;
                     camY = camStartY - dy / zoom;
                 }
-                const { col, row } = canvasToGrid(c.x, c.y);
-                if (col >= 0 && col < COLS && row >= 0 && row < ROWS) {
-                    hoverCol = col; hoverRow = row;
-                } else { hoverCol = null; hoverRow = null; }
+                const { col, row } = screenToGrid(p.x, p.y);
+                if (col >= 0 && col < COLS && row >= 0 && row < ROWS) { hoverCol = col; hoverRow = row; }
+                else { hoverCol = null; hoverRow = null; }
             });
 
             canvas.addEventListener('mouseup', e => {
@@ -1600,137 +1970,132 @@
                 }
             });
 
-            canvas.addEventListener('mouseleave', () => {
-                isPanning = false; hoverCol = null; hoverRow = null;
-            });
+            canvas.addEventListener('mouseleave', () => { isPanning = false; hoverCol = null; hoverRow = null; });
 
             canvas.addEventListener('contextmenu', e => {
                 e.preventDefault();
-                camX = 0; camY = 0; zoom = 1.2;
+                camX = 0; camY = 0; zoom = 1.0;
                 updateZoomDisplay();
-                AudioEngine.playSFX('click');
             });
 
-            // FIXED WHEEL ZOOM — zooms toward mouse cursor
+            // ---------- FIXED WHEEL ZOOM ----------
             canvas.addEventListener('wheel', e => {
                 e.preventDefault();
                 e.stopPropagation();
-
-                // Get cursor position in canvas pixel space
-                const c = clientToCanvas(e.clientX, e.clientY);
-
-                // World point under the cursor BEFORE zoom
-                const worldBefore = canvasToWorld(c.x, c.y);
-
-                // Compute new zoom level
+                const p = getCanvasMousePos(e.clientX, e.clientY);
+                const worldBefore = screenToWorld(p.x, p.y);
                 const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
                 const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
-
                 if (newZoom === zoom) return;
-
-                // Apply new zoom
                 zoom = newZoom;
-
-                // World point under the cursor AFTER zoom (with same camX/camY)
-                const worldAfter = canvasToWorld(c.x, c.y);
-
-                // Adjust camera so worldBefore stays under cursor
+                const worldAfter = screenToWorld(p.x, p.y);
                 camX += worldBefore.x - worldAfter.x;
                 camY += worldBefore.y - worldAfter.y;
-
                 updateZoomDisplay();
             }, { passive: false });
 
-            // Touch support
-            let touchStartDist = 0, touchStartZoom = 1, touchMoved = false;
-            let touchStartWorld = { x: 0, y: 0 };
-            let touchStartCam = { x: 0, y: 0 };
-            let touchMidCanvas = { x: 0, y: 0 };
+            // ---------- TOUCH HANDLING (proper pinch zoom) ----------
+            let touchState = {
+                mode: 'none', // 'none', 'pan', 'pinch'
+                startDist: 0, startZoom: 1,
+                startMidX: 0, startMidY: 0,
+                startCamX: 0, startCamY: 0,
+                startWorldMid: { x: 0, y: 0 },
+                moved: false,
+                startX: 0, startY: 0
+            };
 
             canvas.addEventListener('touchstart', e => {
-                if (e.touches.length === 1) {
-                    isPanning = true; panMoved = false;
-                    const c = clientToCanvas(e.touches[0].clientX, e.touches[0].clientY);
-                    panStartX = c.x; panStartY = c.y;
-                    camStartX = camX; camStartY = camY;
-                } else if (e.touches.length === 2) {
-                    isPanning = false;
-                    const t1 = e.touches[0], t2 = e.touches[1];
-                    touchStartDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-                    touchStartZoom = zoom;
-                    touchStartCam = { x: camX, y: camY };
-                    // Midpoint of the two touches in canvas pixels
-                    const mx = (t1.clientX + t2.clientX) / 2;
-                    const my = (t1.clientY + t2.clientY) / 2;
-                    touchMidCanvas = clientToCanvas(mx, my);
-                    touchStartWorld = canvasToWorld(touchMidCanvas.x, touchMidCanvas.y);
-                }
-            }, { passive: true });
-
-            canvas.addEventListener('touchmove', e => {
                 e.preventDefault();
-                if (e.touches.length === 1 && isPanning) {
-                    const c = clientToCanvas(e.touches[0].clientX, e.touches[0].clientY);
-                    const dx = c.x - panStartX, dy = c.y - panStartY;
-                    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) touchMoved = true;
-                    camX = camStartX - dx / zoom;
-                    camY = camStartY - dy / zoom;
+                if (e.touches.length === 1) {
+                    const t = e.touches[0];
+                    const p = getCanvasMousePos(t.clientX, t.clientY);
+                    touchState.mode = 'pan';
+                    touchState.startX = p.x;
+                    touchState.startY = p.y;
+                    touchState.startCamX = camX;
+                    touchState.startCamY = camY;
+                    touchState.moved = false;
                 } else if (e.touches.length === 2) {
                     const t1 = e.touches[0], t2 = e.touches[1];
                     const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-                    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, touchStartZoom * dist / touchStartDist));
+                    const midClientX = (t1.clientX + t2.clientX) / 2;
+                    const midClientY = (t1.clientY + t2.clientY) / 2;
+                    const p = getCanvasMousePos(midClientX, midClientY);
+                    touchState.mode = 'pinch';
+                    touchState.startDist = dist;
+                    touchState.startZoom = zoom;
+                    touchState.startMidX = p.x;
+                    touchState.startMidY = p.y;
+                    touchState.startCamX = camX;
+                    touchState.startCamY = camY;
+                    touchState.startWorldMid = screenToWorld(p.x, p.y);
+                    touchState.moved = true;
+                }
+            }, { passive: false });
 
-                    // Preserve world point under midpoint
-                    const worldBefore = { x: (touchMidCanvas.x - canvas.width/2) / touchStartZoom + touchStartCam.x,
-                                          y: (touchMidCanvas.y - canvas.height/2) / touchStartZoom + touchStartCam.y };
+            canvas.addEventListener('touchmove', e => {
+                e.preventDefault();
+                if (touchState.mode === 'pan' && e.touches.length === 1) {
+                    const t = e.touches[0];
+                    const p = getCanvasMousePos(t.clientX, t.clientY);
+                    const dx = p.x - touchState.startX;
+                    const dy = p.y - touchState.startY;
+                    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) touchState.moved = true;
+                    camX = touchState.startCamX - dx / zoom;
+                    camY = touchState.startCamY - dy / zoom;
+                } else if (touchState.mode === 'pinch' && e.touches.length === 2) {
+                    const t1 = e.touches[0], t2 = e.touches[1];
+                    const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+                    const midClientX = (t1.clientX + t2.clientX) / 2;
+                    const midClientY = (t1.clientY + t2.clientY) / 2;
+                    const p = getCanvasMousePos(midClientX, midClientY);
 
+                    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, touchState.startZoom * dist / touchState.startDist));
                     zoom = newZoom;
-                    camX = touchStartCam.x + (worldBefore.x - ((touchMidCanvas.x - canvas.width/2) / newZoom + camX));
-                    camY = touchStartCam.y + (worldBefore.y - ((touchMidCanvas.y - canvas.height/2) / newZoom + camY));
-
-                    // Simpler stable approach: recompute
-                    const worldAfter = canvasToWorld(touchMidCanvas.x, touchMidCanvas.y);
-                    camX += worldBefore.x - worldAfter.x;
-                    camY += worldBefore.y - worldAfter.y;
-
+                    // Keep startWorldMid under the current pinch midpoint
+                    const newWorldMid = screenToWorld(p.x, p.y);
+                    camX += touchState.startWorldMid.x - newWorldMid.x;
+                    camY += touchState.startWorldMid.y - newWorldMid.y;
                     updateZoomDisplay();
                 }
             }, { passive: false });
 
             canvas.addEventListener('touchend', e => {
-                if (isPanning && e.changedTouches.length === 1 && !touchMoved) {
-                    handleClick(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                e.preventDefault();
+                if (touchState.mode === 'pan' && !touchState.moved) {
+                    // Tap → build
+                    handleClick(touchState.startX + canvas.getBoundingClientRect().left, touchState.startY + canvas.getBoundingClientRect().top);
                 }
-                if (e.touches.length === 0) { isPanning = false; touchMoved = false; }
-            });
+                if (e.touches.length === 0) {
+                    touchState.mode = 'none';
+                    touchState.moved = false;
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchcancel', e => {
+                touchState.mode = 'none';
+                touchState.moved = false;
+            }, { passive: true });
 
             function updateZoomDisplay() {
                 document.getElementById('zoomLevel').textContent = zoom.toFixed(1) + 'x';
             }
 
-            // Zoom button handlers (FIXED — zoom toward canvas center)
-            document.getElementById('zoomIn').addEventListener('click', () => {
-                const c = { x: canvas.width / 2, y: canvas.height / 2 };
-                const worldBefore = canvasToWorld(c.x, c.y);
-                zoom = Math.min(MAX_ZOOM, zoom * 1.25);
-                const worldAfter = canvasToWorld(c.x, c.y);
+            function zoomBy(factor) {
+                const p = { x: canvasW / 2, y: canvasH / 2 };
+                const worldBefore = screenToWorld(p.x, p.y);
+                zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
+                const worldAfter = screenToWorld(p.x, p.y);
                 camX += worldBefore.x - worldAfter.x;
                 camY += worldBefore.y - worldAfter.y;
                 updateZoomDisplay();
-                AudioEngine.playSFX('click');
-            });
-            document.getElementById('zoomOut').addEventListener('click', () => {
-                const c = { x: canvas.width / 2, y: canvas.height / 2 };
-                const worldBefore = canvasToWorld(c.x, c.y);
-                zoom = Math.max(MIN_ZOOM, zoom / 1.25);
-                const worldAfter = canvasToWorld(c.x, c.y);
-                camX += worldBefore.x - worldAfter.x;
-                camY += worldBefore.y - worldAfter.y;
-                updateZoomDisplay();
-                AudioEngine.playSFX('click');
-            });
+            }
+
+            document.getElementById('zoomIn').addEventListener('click', () => { zoomBy(1.25); AudioEngine.playSFX('click'); });
+            document.getElementById('zoomOut').addEventListener('click', () => { zoomBy(1/1.25); AudioEngine.playSFX('click'); });
             document.getElementById('zoomReset').addEventListener('click', () => {
-                zoom = 1.2; camX = 0; camY = 0;
+                zoom = 1.0; camX = 0; camY = 0;
                 updateZoomDisplay();
                 AudioEngine.playSFX('click');
             });
@@ -1742,12 +2107,13 @@
                     const b = grid[r][c];
                     if (b && b.type !== 'road' && b.type !== 'park' && b.type !== 'watertower' && b.type !== 'tree') cands.push({ r, c });
                 }
-                if (cands.length === 0) { showToast('🔥 No buildings to burn!', 1500); return; }
+                if (cands.length === 0) { showToast('🔥 No buildings!', 1500); return; }
                 const t = cands[Math.floor(Math.random() * cands.length)];
                 grid[t.r][t.c] = null;
                 money = Math.max(0, money - 150);
-                log('🔥 Fire destroyed a building! -$150', 'bad');
-                showToast('🔥 Building caught fire!', 2000);
+                totalDisastersSurvived++;
+                log('🔥 Fire! -$150', 'bad');
+                showToast('🔥 Fire!', 2000);
                 AudioEngine.playSFX('fire');
                 if (selectedCell && selectedCell.r === t.r && selectedCell.c === t.c) selectedCell = null;
                 recalcStats();
@@ -1759,8 +2125,9 @@
                 for (let r = dr - 1; r <= dr + 1; r++) for (let c = dc - 1; c <= dc + 1; c++) {
                     if (r >= 0 && r < ROWS && c >= 0 && c < COLS && grid[r][c]) { grid[r][c] = null; d++; }
                 }
-                log(`🌪️ Tornado destroyed ${d} buildings!`, 'bad');
-                showToast(`🌪️ Tornado hit! ${d} buildings destroyed`, 2500);
+                totalDisastersSurvived++;
+                log(`🌪️ Tornado! ${d} buildings`, 'bad');
+                showToast(`🌪️ ${d} destroyed`, 2500);
                 AudioEngine.playSFX('tornado');
                 selectedCell = null;
                 recalcStats();
@@ -1769,8 +2136,9 @@
             function triggerUfo() {
                 const stolen = Math.min(money, 250);
                 money -= stolen;
-                log(`👽 UFO stole $${stolen}!`, 'bad');
-                showToast(`👽 UFO abduction! -$${stolen}`, 2500);
+                totalDisastersSurvived++;
+                log(`👽 UFO! -$${stolen}`, 'bad');
+                showToast(`👽 UFO! -$${stolen}`, 2500);
                 AudioEngine.playSFX('ufo');
                 recalcStats();
             }
@@ -1782,8 +2150,9 @@
                     const nr = r + dr, nc = c + dc;
                     if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && grid[nr][nc]) { grid[nr][nc] = null; d++; }
                 }
-                log(`☄️ Meteor struck! ${d} buildings destroyed!`, 'bad');
-                showToast(`☄️ Meteor impact! ${d} buildings destroyed`, 2500);
+                totalDisastersSurvived++;
+                log(`☄️ Meteor! ${d} buildings`, 'bad');
+                showToast(`☄️ Meteor! ${d} destroyed`, 2500);
                 AudioEngine.playSFX('meteor');
                 selectedCell = null;
                 recalcStats();
@@ -1791,21 +2160,22 @@
 
             function triggerPlague() {
                 const loss = Math.min(population, Math.floor(population * 0.15));
-                const residentials = [];
+                const res = [];
                 for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
                     const b = grid[r][c];
-                    if (b && (b.type === 'residential' || b.type === 'apartment')) residentials.push({ r, c });
+                    if (b && (b.type === 'residential' || b.type === 'apartment')) res.push({ r, c });
                 }
                 let d = 0;
-                const toDestroy = Math.min(residentials.length, Math.floor(residentials.length * 0.3));
-                for (let i = 0; i < toDestroy; i++) {
-                    const idx = Math.floor(Math.random() * residentials.length);
-                    const t = residentials.splice(idx, 1)[0];
+                const toKill = Math.min(res.length, Math.floor(res.length * 0.3));
+                for (let i = 0; i < toKill; i++) {
+                    const idx = Math.floor(Math.random() * res.length);
+                    const t = res.splice(idx, 1)[0];
                     grid[t.r][t.c] = null;
                     d++;
                 }
-                log(`☣️ Plague! Lost ~${loss} citizens, ${d} homes destroyed.`, 'bad');
-                showToast(`☣️ Plague outbreak! -${loss} citizens`, 2500);
+                totalDisastersSurvived++;
+                log(`☣️ Plague! -${loss} pop, ${d} homes`, 'bad');
+                showToast(`☣️ Plague! -${loss} pop`, 2500);
                 AudioEngine.playSFX('plague');
                 selectedCell = null;
                 recalcStats();
@@ -1817,14 +2187,12 @@
                 for (let r = 0; r < ROWS; r++) {
                     for (let c = 0; c < COLS; c++) {
                         const dist = Math.hypot(r - cr, c - cc);
-                        if (dist < 4 && grid[r][c] && Math.random() < (1 - dist / 4) * 0.6) {
-                            grid[r][c] = null;
-                            d++;
-                        }
+                        if (dist < 4 && grid[r][c] && Math.random() < (1 - dist / 4) * 0.6) { grid[r][c] = null; d++; }
                     }
                 }
-                log(`🌊 Earthquake! ${d} buildings destroyed!`, 'bad');
-                showToast(`🌊 Earthquake! ${d} buildings destroyed`, 2500);
+                totalDisastersSurvived++;
+                log(`🌊 Earthquake! ${d} destroyed`, 'bad');
+                showToast(`🌊 Quake! ${d} destroyed`, 2500);
                 AudioEngine.playSFX('earthquake');
                 selectedCell = null;
                 recalcStats();
@@ -1833,10 +2201,10 @@
             function research(name) {
                 const r = RESEARCH[name];
                 if (!r) return;
-                if (unlockedResearch[name]) { showToast('✅ Already researched!', 1500); return; }
+                if (unlockedResearch[name]) { showToast('✅ Already!', 1500); return; }
                 if (researchPoints < r.cost) {
                     AudioEngine.playSFX('error');
-                    showToast(`🔬 Need ${r.cost} RP for ${r.name}`, 2000);
+                    showToast(`🔬 Need ${r.cost} RP!`, 2000);
                     return;
                 }
                 researchPoints -= r.cost;
@@ -1849,9 +2217,10 @@
                     rBtn.disabled = true;
                     rBtn.textContent = `✅ ${r.name}`;
                 }
-                log(`🔬 Researched ${r.name}!`, 'good');
-                showToast(`🔬 ${r.name} unlocked!`, 2500);
+                log(`🔬 ${r.name}!`, 'good');
+                showToast(`🔬 ${r.name}!`, 2500);
                 AudioEngine.playSFX('research');
+                addXP(50);
                 recalcStats();
             }
 
@@ -1860,20 +2229,20 @@
                 const btn = document.getElementById('policy' + policy.charAt(0).toUpperCase() + policy.slice(1));
                 if (policies[policy]) {
                     btn.classList.add('active');
-                    const messages = {
-                        green: '🌱 Green Energy enacted! +10 happiness',
-                        lowTax: '💰 Low Taxes! Tax now 5%',
-                        education: '🎓 Education enacted! +6 happiness',
-                        healthcare: '🏥 Healthcare enacted! +8 happiness',
-                        recycling: '♻️ Recycling enacted! -Pollution',
-                        transit: '🚌 Transit policy enacted! +Happiness'
+                    const msgs = {
+                        green: '🌱 Green Energy!',
+                        lowTax: '💰 Low Tax 5%',
+                        education: '🎓 Education!',
+                        healthcare: '🏥 Healthcare!',
+                        recycling: '♻️ Recycle!',
+                        transit: '🚌 Transit!'
                     };
                     if (policy === 'lowTax') taxRate = 5;
-                    log(messages[policy], 'good');
-                    showToast(messages[policy], 2000);
+                    log(msgs[policy], 'good');
+                    showToast(msgs[policy], 2000);
                 } else {
                     btn.classList.remove('active');
-                    if (policy === 'lowTax') { taxRate = 9; log('💰 Tax restored to 9%', 'info'); }
+                    if (policy === 'lowTax') { taxRate = 9; log('💰 Tax → 9%', 'info'); }
                 }
                 AudioEngine.playSFX('policy');
                 recalcStats();
@@ -1886,36 +2255,7 @@
                 AudioEngine.playSFX('click');
             }
 
-            document.querySelectorAll('.speed-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    gameSpeed = parseInt(btn.dataset.speed);
-                    AudioEngine.playSFX('click');
-                });
-            });
-
-            function resetCity() {
-                money = 8000; day = 1; taxRate = 9; researchPoints = 0;
-                unlockedResearch = {};
-                policies = { green: false, lowTax: false, education: false, healthcare: false, recycling: false, transit: false };
-                agents = []; selectedCell = null;
-                weather = 'sunny'; season = 'spring';
-                document.querySelectorAll('.policy-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.research-btn').forEach(b => { b.classList.remove('unlocked'); b.disabled = false; });
-                ['toolHospital','toolSchool','toolStadium','toolSolar','toolSubway'].forEach(id => {
-                    const el = document.getElementById(id); if (el) el.disabled = true;
-                });
-                initGrid();
-                logEntries = [];
-                log('City reset. Good luck, Mayor!', 'info');
-                showToast('🔄 City reset!', 2000);
-                camX = 0; camY = 0; zoom = 1.2;
-                updateZoomDisplay();
-                AudioEngine.playSFX('reset');
-                recalcStats();
-            }
-
+            // ---------- SETUP ----------
             function setupToolButtons() {
                 const btns = document.querySelectorAll('.tool-btn[data-tool]');
                 btns.forEach(btn => {
@@ -1951,36 +2291,36 @@
                 }
                 musicBtn.addEventListener('click', () => {
                     ensureAudio();
-                    const newState = !AudioEngine.musicEnabled;
-                    AudioEngine.setMusicEnabled(newState);
-                    musicBtn.classList.toggle('muted', !newState);
-                    musicBtn.textContent = newState ? '🎵' : '🔇';
-                    document.getElementById('musicInfo').textContent = newState ? '🎵 Waseem Sim City · Music playing' : '🔇 Music muted';
-                    showToast(newState ? '🎵 Music On' : '🔇 Music Off', 1500);
+                    const s = !AudioEngine.musicEnabled;
+                    AudioEngine.setMusicEnabled(s);
+                    musicBtn.classList.toggle('muted', !s);
+                    musicBtn.textContent = s ? '🎵' : '🔇';
+                    document.getElementById('musicInfo').textContent = s ? '🎵 Ambient City' : '🔇 Muted';
+                    showToast(s ? '🎵 Music On' : '🔇 Music Off', 1500);
                 });
                 sfxBtn.addEventListener('click', () => {
                     ensureAudio();
-                    const newState = !AudioEngine.sfxEnabled;
-                    AudioEngine.setSfxEnabled(newState);
-                    sfxBtn.classList.toggle('muted', !newState);
-                    sfxBtn.textContent = newState ? '🔊' : '🔈';
-                    showToast(newState ? '🔊 Sound Effects On' : '🔈 Sound Effects Off', 1500);
-                    if (newState) AudioEngine.playSFX('click');
+                    const s = !AudioEngine.sfxEnabled;
+                    AudioEngine.setSfxEnabled(s);
+                    sfxBtn.classList.toggle('muted', !s);
+                    sfxBtn.textContent = s ? '🔊' : '🔈';
+                    showToast(s ? '🔊 SFX On' : '🔈 SFX Off', 1500);
+                    if (s) AudioEngine.playSFX('click');
                 });
                 volSlider.addEventListener('input', () => { ensureAudio(); AudioEngine.setVolume(volSlider.value / 100); });
-                const startOnInteraction = () => {
+                const start = () => {
                     ensureAudio();
                     if (AudioEngine.musicEnabled && !AudioEngine.musicPlaying) {
                         AudioEngine.startMusic();
-                        document.getElementById('musicInfo').textContent = '🎵 Waseem Sim City · Music playing';
+                        document.getElementById('musicInfo').textContent = '🎵 Ambient City';
                     }
-                    document.removeEventListener('click', startOnInteraction);
-                    document.removeEventListener('keydown', startOnInteraction);
-                    document.removeEventListener('touchstart', startOnInteraction);
+                    document.removeEventListener('click', start);
+                    document.removeEventListener('keydown', start);
+                    document.removeEventListener('touchstart', start);
                 };
-                document.addEventListener('click', startOnInteraction);
-                document.addEventListener('keydown', startOnInteraction);
-                document.addEventListener('touchstart', startOnInteraction);
+                document.addEventListener('click', start);
+                document.addEventListener('keydown', start);
+                document.addEventListener('touchstart', start);
             }
 
             function updateWeather() {
@@ -1991,11 +2331,11 @@
                     if (season === 'summer') pool = ['sunny', 'sunny', 'sunny', 'storm', 'rain'];
                     if (season === 'autumn') pool = ['sunny', 'rain', 'fog', 'rain', 'storm'];
                     if (season === 'spring') pool = ['sunny', 'rain', 'rain', 'fog', 'sunny'];
-                    const newWeather = pool[Math.floor(Math.random() * pool.length)];
-                    if (newWeather !== weather) {
-                        weather = newWeather;
+                    const nw = pool[Math.floor(Math.random() * pool.length)];
+                    if (nw !== weather) {
+                        weather = nw;
                         const w = WEATHER_TYPES[weather];
-                        log(`${w.icon} Weather changed to ${w.name}`, 'info');
+                        log(`${w.icon} ${w.name}`, 'info');
                         showToast(`${w.icon} ${w.name}`, 2000);
                     }
                     weatherTimer = 0;
@@ -2005,14 +2345,36 @@
             function updateSeason() {
                 seasonTimer += 1;
                 if (seasonTimer > 1200) {
-                    const seasons = ['spring', 'summer', 'autumn', 'winter'];
-                    const idx = seasons.indexOf(season);
-                    season = seasons[(idx + 1) % 4];
+                    const arr = ['spring', 'summer', 'autumn', 'winter'];
+                    const idx = arr.indexOf(season);
+                    season = arr[(idx + 1) % 4];
                     const s = SEASONS[season];
-                    log(`${s.icon} Season changed to ${s.name}`, 'info');
-                    showToast(`${s.icon} ${s.name} has arrived`, 2500);
+                    log(`${s.icon} ${s.name}`, 'info');
+                    showToast(`${s.icon} ${s.name}`, 2500);
                     seasonTimer = 0;
                 }
+            }
+
+            function resetCity() {
+                if (!confirm('Reset city? Prestige & achievements remain.')) return;
+                money = 8000; day = 1; taxRate = 9; researchPoints = 0;
+                unlockedResearch = {};
+                policies = { green: false, lowTax: false, education: false, healthcare: false, recycling: false, transit: false };
+                agents = []; selectedCell = null;
+                weather = 'sunny'; season = 'spring';
+                document.querySelectorAll('.policy-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.research-btn').forEach(b => { b.classList.remove('unlocked'); b.disabled = false; });
+                ['toolHospital','toolSchool','toolStadium','toolSolar','toolSubway'].forEach(id => {
+                    const el = document.getElementById(id); if (el) el.disabled = true;
+                });
+                initGrid();
+                logEntries = [];
+                log('City reset!', 'info');
+                showToast('🔄 City reset!', 2000);
+                camX = 0; camY = 0; zoom = 1.0;
+                updateZoomDisplay();
+                AudioEngine.playSFX('reset');
+                recalcStats();
             }
 
             let lastFrame = performance.now();
@@ -2028,15 +2390,22 @@
             }
 
             function init() {
+                resizeCanvas();
                 initGrid();
                 recalcStats();
                 setupToolButtons();
                 setupResearchButtons();
                 setupSoundControls();
                 updateZoomDisplay();
+                refreshQuests();
+                renderQuests();
+                renderAchievements();
+                checkDailyReward();
 
                 document.getElementById('upgradeBtn').addEventListener('click', upgradeSelected);
                 document.getElementById('demolishBtn').addEventListener('click', demolishSelected);
+                document.getElementById('prestigeBtn').addEventListener('click', doPrestige);
+                document.getElementById('claimDaily').addEventListener('click', claimDaily);
 
                 document.getElementById('disasterFire').addEventListener('click', triggerFire);
                 document.getElementById('disasterTornado').addEventListener('click', triggerTornado);
@@ -2057,27 +2426,50 @@
                 document.getElementById('timeDusk').addEventListener('click', () => setTime('dusk'));
                 document.getElementById('timeNight').addEventListener('click', () => setTime('night'));
 
+                document.querySelectorAll('.speed-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        gameSpeed = parseInt(btn.dataset.speed);
+                        AudioEngine.playSFX('click');
+                    });
+                });
+
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        const tab = btn.dataset.tab;
+                        document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+                        document.getElementById('tabContent' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
+                        AudioEngine.playSFX('click');
+                    });
+                });
+
                 document.getElementById('resetBtn').addEventListener('click', resetCity);
 
                 setInterval(() => {
                     day++;
-                    const income = Math.floor(population * taxRate * 0.6);
+                    totalDaysPlayed++;
+                    const incomeBonus = 1 + prestigePoints * 0.02;
+                    const income = Math.floor(population * taxRate * 0.6 * incomeBonus);
                     money += income;
-                    if (income > 0) log(`📅 Day ${day}: +$${income} tax income`, 'good');
+                    if (income > 0) log(`📅 Day ${day}: +$${income}`, 'good');
                     let rp = 1;
                     if (unlockedResearch.school) rp += 2;
                     researchPoints += rp;
-                    if (rp > 1) log(`🔬 +${rp} research points`, 'info');
+                    addXP(2 + Math.floor(population / 100));
                     AudioEngine.playSFX('dayTick');
                     const roll = Math.random();
-                    if (roll < 0.05 && population > 5) {
+                    if (roll < 0.08 && population > 5) {
                         const events = [
-                            { msg: '🎉 Festival in the park! +Happiness', type: 'good', effect: () => happiness = Math.min(100, happiness + 5) },
-                            { msg: '📈 Business boom! +$500', type: 'good', effect: () => money += 500 },
-                            { msg: '🏆 City ranked #1 in region!', type: 'good', effect: () => happiness = Math.min(100, happiness + 8) },
-                            { msg: '🎓 New graduates boost research! +5 RP', type: 'good', effect: () => researchPoints += 5 },
-                            { msg: '🚗 Traffic congestion increased!', type: 'warn', effect: () => {} },
-                            { msg: '💧 Water pipe leak! -$100', type: 'bad', effect: () => money = Math.max(0, money - 100) }
+                            { msg: '🎉 Festival! +Happy', type: 'good', effect: () => happiness = Math.min(100, happiness + 5) },
+                            { msg: '📈 Boom! +$500', type: 'good', effect: () => money += 500 },
+                            { msg: '🏆 #1 City!', type: 'good', effect: () => happiness = Math.min(100, happiness + 8) },
+                            { msg: '🎓 +5 RP', type: 'good', effect: () => researchPoints += 5 },
+                            { msg: '🚗 Traffic up!', type: 'warn', effect: () => {} },
+                            { msg: '💧 Leak! -$100', type: 'bad', effect: () => money = Math.max(0, money - 100) },
+                            { msg: '🎁 Donation +$300', type: 'good', effect: () => money += 300 }
                         ];
                         const ev = events[Math.floor(Math.random() * events.length)];
                         ev.effect();
@@ -2085,10 +2477,10 @@
                         showToast(ev.msg, 2500);
                     }
                     recalcStats();
-                }, 18000);
+                }, 15000);
 
-                log('Welcome to Waseem Sim City! Build, upgrade, and grow.', 'info');
-                showToast('🏙️ Welcome to Waseem Sim City!', 3000);
+                log('Welcome to Waseem Sim City!', 'gold');
+                showToast('🏙️ Welcome, Mayor!', 3000, true);
                 requestAnimationFrame(animate);
             }
 
