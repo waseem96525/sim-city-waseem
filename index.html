@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Waseem Sim City · Empire Edition</title>
+<title>Waseem Sim City · Empire Edition HD</title>
 <style>
 *{box-sizing:border-box;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;background:#08131a;font-family:'Segoe UI',system-ui,sans-serif;color:#e3f2fd}
@@ -129,7 +129,7 @@ canvas:active{cursor:grabbing}
 </div>
 <div id="gameRoot">
 <div class="header">
-<h1>🏙️ WASEEM SIM CITY</h1>
+<h1>🏙️ WASEEM SIM CITY · HD</h1>
 <div class="header-info">
 <div class="header-badge" id="weatherBadge">☀️ Sunny</div>
 <div class="header-badge" id="seasonBadge">🌸 Spring</div>
@@ -434,33 +434,22 @@ const AudioEngine=(function(){
     const MIN_ZOOM=0.4,MAX_ZOOM=4.0;
     let canvasW=800,canvasH=600,dpr=1;
 
-    // CRITICAL: This reads the ACTUAL rendered pixel size of the canvas-area
-    // and applies it directly to the canvas element as inline styles.
     function resizeCanvas(){
-        const rect = canvasArea.getBoundingClientRect();
-        // Fallback dimensions if layout hasn't happened yet
-        let w = Math.floor(rect.width);
-        let h = Math.floor(rect.height);
-        if(!w || w < 50) w = Math.max(300, window.innerWidth - 20);
-        if(!h || h < 50) h = Math.max(300, window.innerHeight - 300);
-
-        canvasW = w;
-        canvasH = h;
-        dpr = Math.min(window.devicePixelRatio||1, 2);
-
-        // Set the canvas bitmap size (physical pixels)
-        canvas.width  = Math.floor(canvasW * dpr);
-        canvas.height = Math.floor(canvasH * dpr);
-        // Force the canvas CSS size explicitly (CSS pixels)
-        canvas.style.width  = canvasW + 'px';
-        canvas.style.height = canvasH + 'px';
-
-        // Reset and apply DPR transform
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const rect=canvasArea.getBoundingClientRect();
+        let w=Math.floor(rect.width);
+        let h=Math.floor(rect.height);
+        if(!w||w<50)w=Math.max(300,window.innerWidth-20);
+        if(!h||h<50)h=Math.max(300,window.innerHeight-300);
+        canvasW=w;canvasH=h;
+        dpr=Math.min(window.devicePixelRatio||1,2);
+        canvas.width=Math.floor(canvasW*dpr);
+        canvas.height=Math.floor(canvasH*dpr);
+        canvas.style.width=canvasW+'px';
+        canvas.style.height=canvasH+'px';
+        ctx.setTransform(dpr,0,0,dpr,0,0);
     }
-
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('orientationchange', ()=>{setTimeout(resizeCanvas,100);setTimeout(resizeCanvas,400);});
+    window.addEventListener('resize',resizeCanvas);
+    window.addEventListener('orientationchange',()=>{setTimeout(resizeCanvas,100);setTimeout(resizeCanvas,400);});
 
     const COLS=24,ROWS=24;
     const TILE_W=56,TILE_H=28;
@@ -477,13 +466,19 @@ const AudioEngine=(function(){
     let terrain=Array(ROWS).fill().map(()=>Array(COLS).fill('grass'));
     let currentTool='residential';
     let agents=[];
-    const MAX_AGENTS=60;
+    const MAX_AGENTS=70;
     let hoverCol=null,hoverRow=null;
     let selectedCell=null;
     let time=0;
     let weather='sunny',season='spring';
     let weatherTimer=0,seasonTimer=0;
     let totalTraffic=0,greenEnergy=0;
+
+    // Ambient systems
+    let clouds=[];
+    let birds=[];
+    let floatingTexts=[];
+    let lastAmbientSpawn=0;
 
     let cityLevel=1,cityXP=0,cityXPNeeded=100;
     let prestigePoints=0,prestigeCount=0;
@@ -558,8 +553,8 @@ const AudioEngine=(function(){
             if(q.progress>=q.target&&!q.completed){
                 q.completed=true;
                 money+=q.reward;cityXP+=q.xp;completedQuests++;
-                log(`📜 ${q.title}! +$${q.reward}`,'gold');
-                showToast(`📜 ${q.title}! +$${q.reward}`,3000,true);
+                log('📜 '+q.title+'! +$'+q.reward,'gold');
+                showToast('📜 '+q.title+'! +$'+q.reward,3000,true);
                 AudioEngine.playSFX('questComplete');
             }
         });
@@ -573,8 +568,8 @@ const AudioEngine=(function(){
                 unlockedAchievements[key]=true;
                 const a=ACHIEVEMENTS[key];
                 money+=1000;cityXP+=100;
-                log(`🏆 ${a.name}! +$1000`,'gold');
-                showToast(`🏆 ${a.icon} ${a.name}! +$1000`,3500,true);
+                log('🏆 '+a.name+'! +$1000','gold');
+                showToast('🏆 '+a.icon+' '+a.name+'! +$1000',3500,true);
                 AudioEngine.playSFX('achievement');
             }
         });
@@ -588,8 +583,8 @@ const AudioEngine=(function(){
             cityLevel++;
             cityXPNeeded=Math.floor(cityXPNeeded*1.5);
             money+=2000;
-            log(`⭐ Level ${cityLevel}! +$2000`,'gold');
-            showToast(`⭐ Level ${cityLevel}! +$2000`,3500,true);
+            log('⭐ Level '+cityLevel+'! +$2000','gold');
+            showToast('⭐ Level '+cityLevel+'! +$2000',3500,true);
             AudioEngine.playSFX('upgrade');
         }
         updateHeaderBadges();
@@ -601,7 +596,7 @@ const AudioEngine=(function(){
     function doPrestige(){
         if(!canPrestige())return;
         const gain=getPrestigeGain();
-        if(!confirm(`Prestige Reset?\n\nGain ${gain} Prestige Points. Continue?`))return;
+        if(!confirm('Prestige Reset?\n\nGain '+gain+' Prestige Points. Continue?'))return;
         prestigePoints+=gain;prestigeCount++;
         money=8000+prestigePoints*100;
         population=0;jobs=0;happiness=100;day=1;researchPoints=0;
@@ -614,8 +609,8 @@ const AudioEngine=(function(){
             const el=document.getElementById(id);if(el)el.disabled=true;
         });
         initGrid();
-        log(`✨ PRESTIGE! +${gain} PP!`,'gold');
-        showToast(`✨ Prestige! ${gain} PP!`,4000,true);
+        log('✨ PRESTIGE! +'+gain+' PP!','gold');
+        showToast('✨ Prestige! '+gain+' PP!',4000,true);
         AudioEngine.playSFX('prestige');
         camX=0;camY=0;zoom=1.0;updateZoomDisplay();
         recalcStats();
@@ -634,12 +629,12 @@ const AudioEngine=(function(){
             dailyStreak=(lastLoginDate===yStr)?dailyStreak+1:1;
             lastLoginDate=today;
             document.getElementById('dailyReward').classList.add('ready');
-            document.getElementById('dailyDesc').textContent=`Day ${dailyStreak} streak!`;
+            document.getElementById('dailyDesc').textContent='Day '+dailyStreak+' streak!';
             document.getElementById('claimDaily').disabled=false;
             document.getElementById('claimDaily').textContent='Claim';
         }else{
             document.getElementById('dailyReward').classList.remove('ready');
-            document.getElementById('dailyDesc').textContent=`Come back tomorrow! (Day ${dailyStreak})`;
+            document.getElementById('dailyDesc').textContent='Come back tomorrow! (Day '+dailyStreak+')';
             document.getElementById('claimDaily').disabled=true;
             document.getElementById('claimDaily').textContent='✅ Claimed';
         }
@@ -652,8 +647,8 @@ const AudioEngine=(function(){
         const rp=3+Math.floor(dailyStreak/3);
         money+=reward;researchPoints+=rp;
         addXP(50);
-        log(`🎁 Day ${dailyStreak}: +$${reward}, +${rp}RP`,'gold');
-        showToast(`🎁 Day ${dailyStreak}! +$${reward}`,3000,true);
+        log('🎁 Day '+dailyStreak+': +$'+reward+', +'+rp+'RP','gold');
+        showToast('🎁 Day '+dailyStreak+'! +$'+reward,3000,true);
         AudioEngine.playSFX('daily');
         document.getElementById('dailyReward').classList.remove('ready');
         document.getElementById('claimDaily').disabled=true;
@@ -677,10 +672,11 @@ const AudioEngine=(function(){
         logEntries.push({message,type,time:t});
         if(logEntries.length>25)logEntries.shift();
         const box=document.getElementById('logBox');
-        box.innerHTML=logEntries.map(e=>`<div class="log-entry ${e.type}">[${e.time}] ${e.message}</div>`).join('');
+        box.innerHTML=logEntries.map(e=>'<div class="log-entry '+e.type+'">['+e.time+'] '+e.message+'</div>').join('');
         box.scrollTop=box.scrollHeight;
     }
 
+    // ============ BUILDING DEFINITIONS (WITH HD DETAILS) ============
     const BUILDINGS={
         residential:{cost:80,pop:5,power:1,water:1,color:'#e6c8a0',jobs:0,happiness:0,pollution:0,roofColor:'#a55e3c',green:0},
         apartment:{cost:200,pop:15,power:4,water:4,color:'#c8a8e0',jobs:0,happiness:0,pollution:1,roofColor:'#7a5a9a',green:0},
@@ -723,6 +719,21 @@ const AudioEngine=(function(){
         autumn:{name:'Autumn',icon:'🍂',happinessMod:-1},
         winter:{name:'Winter',icon:'❄️',happinessMod:-4}
     };
+
+    // === DETAILED CITIZEN TYPES ===
+    // Each has bodyColor, headColor, hasHat, hasBriefcase, etc.
+    const CITIZEN_TYPES=[
+        {body:'#e57373',head:'#ffe0b2',name:'red'},
+        {body:'#64b5f6',head:'#ffccbc',name:'blue'},
+        {body:'#81c784',head:'#ffe0b2',name:'green'},
+        {body:'#ffb74d',head:'#ffccbc',name:'orange'},
+        {body:'#ba68c8',head:'#ffe0b2',name:'purple'},
+        {body:'#4dd0e1',head:'#ffccbc',name:'cyan'},
+        {body:'#f06292',head:'#ffe0b2',name:'pink'},
+        {body:'#a1887f',head:'#ffe0b2',name:'brown'},
+        {body:'#90a4ae',head:'#ffccbc',name:'grey'}
+    ];
+    const VEHICLE_COLORS=['#ef5350','#42a5f5','#ffca28','#ab47bc','#26c6da','#66bb6a','#ff7043','#5c6bc0'];
 
     function getBuildingStats(r,c){
         const b=grid[r][c];
@@ -1056,23 +1067,28 @@ const AudioEngine=(function(){
         const neighbors=findAdjacentBuildings(road.r,road.c);
         if(neighbors.length===0)return;
         const target=neighbors[Math.floor(Math.random()*neighbors.length)];
-        let type='citizen',color='#81c784',speed=0.008+Math.random()*0.005;
-        const t=target.type;
-        if(t==='commercial'||t==='office'){type='worker';color='#4fc3f7';}
-        else if(t==='industrial'){type='worker';color='#ffb74d';}
-        else if(t==='park'||t==='tree')color='#a5d6a7';
-        else if(t==='residential'||t==='apartment')color='#ffd54f';
-        if(Math.random()<0.15){type='vehicle';color='#ef5350';speed=0.014+Math.random()*0.008;}
+        const isVehicle=Math.random()<0.18;
+        const ct=CITIZEN_TYPES[Math.floor(Math.random()*CITIZEN_TYPES.length)];
         agents.push({
-            type,color,speed,
+            type:isVehicle?'vehicle':'citizen',
+            bodyColor:isVehicle?VEHICLE_COLORS[Math.floor(Math.random()*VEHICLE_COLORS.length)]:ct.body,
+            headColor:ct.head,
+            vehicleType:isVehicle?Math.floor(Math.random()*3):0, // 0=car,1=van,2=truck
             homeRoad:{r:road.r,c:road.c},
             targetBuilding:{r:target.r,c:target.c},
-            progress:Math.random()*0.5,direction:1,
+            progress:Math.random()*0.5,
+            direction:1,
             bobPhase:Math.random()*Math.PI*2,
-            size:type==='vehicle'?5:3,
-            state:'walking',pauseTimer:0,
-            baseSpeed:speed,velocity:0,
-            lifespan:300+Math.random()*400
+            wheelPhase:Math.random()*Math.PI*2,
+            speed:isVehicle?0.014+Math.random()*0.008:0.008+Math.random()*0.005,
+            baseSpeed:isVehicle?0.014+Math.random()*0.008:0.008+Math.random()*0.005,
+            velocity:0,
+            state:'walking',
+            pauseTimer:0,
+            lifespan:300+Math.random()*400,
+            size:isVehicle?5:3,
+            // for variety
+            armPhase:Math.random()*Math.PI*2
         });
     }
 
@@ -1089,6 +1105,7 @@ const AudioEngine=(function(){
             const a=agents[i];
             a.lifespan-=dt*gameSpeed;
             if(a.lifespan<0){agents.splice(i,1);continue;}
+            a.armPhase+=0.15*dt*gameSpeed;
             if(a.state==='visiting'){
                 a.pauseTimer-=dt*gameSpeed;
                 if(a.pauseTimer<=0){
@@ -1119,7 +1136,8 @@ const AudioEngine=(function(){
                     a.targetBuilding={r:t.r,c:t.c};a.progress=0;a.direction=1;a.state='walking';
                 }else{agents.splice(i,1);continue;}
             }
-            a.bobPhase+=(a.type==='vehicle'?0.25:0.12)*dt*gameSpeed;
+            a.bobPhase+=(a.type==='vehicle'?0.4:0.15)*dt*gameSpeed;
+            a.wheelPhase+=0.5*dt*gameSpeed;
         }
     }
 
@@ -1198,13 +1216,9 @@ const AudioEngine=(function(){
 
     function getMousePos(clientX,clientY){
         const rect=canvas.getBoundingClientRect();
-        // Scale factor: canvas bitmap vs displayed size
-        const scaleX = rect.width > 0 ? (canvasW / rect.width) : 1;
-        const scaleY = rect.height > 0 ? (canvasH / rect.height) : 1;
-        return {
-            x: (clientX - rect.left) * scaleX,
-            y: (clientY - rect.top) * scaleY
-        };
+        const scaleX=rect.width>0?(canvasW/rect.width):1;
+        const scaleY=rect.height>0?(canvasH/rect.height):1;
+        return{x:(clientX-rect.left)*scaleX,y:(clientY-rect.top)*scaleY};
     }
 
     function screenToWorld(sx,sy){
@@ -1218,6 +1232,11 @@ const AudioEngine=(function(){
         return{col:Math.round((a+b)/2),row:Math.round((b-a)/2)};
     }
 
+    // ========================================================
+    // ============ DETAILED HD DRAWING FUNCTIONS ============
+    // ========================================================
+
+    // --- BASE TILE ---
     function drawTileWorld(wx,wy,fillTop,fillLeft,fillRight,strokeColor){
         const h=2;
         ctx.beginPath();
@@ -1235,16 +1254,38 @@ const AudioEngine=(function(){
         if(strokeColor){ctx.strokeStyle=strokeColor;ctx.lineWidth=0.8;ctx.stroke();}
     }
 
+    // --- TERRAIN with texture details ---
     function drawTerrain(wx,wy,terr,isNight){
         let top,left,right,stroke;
         if(terr==='water'){
             top=isNight?'#0a2a45':'#1e5a8a';
             left=isNight?'#061a30':'#1a4a70';right=isNight?'#041220':'#123a58';
             stroke=isNight?'#1a4060':'#3a6a90';
-        }else if(terr==='rock'){
+            drawTileWorld(wx,wy,top,left,right,stroke);
+            // Water sparkle
+            if(!isNight){
+                ctx.fillStyle='rgba(255,255,255,0.3)';
+                const t=Math.sin(time*2+wx*0.1)*2;
+                ctx.fillRect(wx-3+t,wy+TILE_H/2-1,4,1);
+                ctx.fillRect(wx+2-t,wy+TILE_H/2+3,3,1);
+            }
+            return;
+        }
+        if(terr==='rock'){
             top=isNight?'#2a2a30':'#5a5a60';
             left='#3a3a40';right='#2a2a30';stroke='#4a4a50';
-        }else if(terr==='forest'){
+            drawTileWorld(wx,wy,top,left,right,stroke);
+            // Rock cracks
+            ctx.strokeStyle=isNight?'#1a1a1e':'#3a3a3e';
+            ctx.lineWidth=0.6;
+            ctx.beginPath();
+            ctx.moveTo(wx-6,wy+TILE_H/2-2);
+            ctx.lineTo(wx,wy+TILE_H/2+2);
+            ctx.lineTo(wx+6,wy+TILE_H/2);
+            ctx.stroke();
+            return;
+        }
+        if(terr==='forest'){
             top=isNight?'#0d2a15':'#1a4a25';
             left='#0a1f10';right='#08150c';stroke='#1a4a25';
         }else{
@@ -1253,207 +1294,1342 @@ const AudioEngine=(function(){
             stroke=isNight?'#1a3a25':'#3a7045';
         }
         drawTileWorld(wx,wy,top,left,right,stroke);
+        // Grass texture dots
+        if(terr==='grass'){
+            ctx.fillStyle=isNight?'rgba(30,80,50,0.5)':'rgba(60,140,80,0.6)';
+            ctx.fillRect(wx-8,wy+TILE_H/2-3,1.5,1.5);
+            ctx.fillRect(wx+5,wy+TILE_H/2+2,1.5,1.5);
+            ctx.fillRect(wx-3,wy+TILE_H/2+5,1.5,1.5);
+        }
     }
 
+    // --- STREET LAMP (for road tiles) ---
+    function drawStreetLamp(x,y,isNight){
+        // Pole
+        ctx.strokeStyle='#4a4a4a';
+        ctx.lineWidth=1.5;
+        ctx.beginPath();
+        ctx.moveTo(x,y);
+        ctx.lineTo(x,y-18);
+        ctx.stroke();
+        // Lamp head
+        ctx.fillStyle=isNight?'#ffd700':'#666';
+        ctx.beginPath();
+        ctx.arc(x,y-20,3,0,Math.PI*2);
+        ctx.fill();
+        // Glow at night
+        if(isNight){
+            ctx.fillStyle='rgba(255,215,0,0.2)';
+            ctx.beginPath();
+            ctx.arc(x,y-20,12,0,Math.PI*2);
+            ctx.fill();
+        }
+    }
+
+    // --- DETAILED BUILDING RENDERER ---
     function drawBuildingWorld(col,row,type,level){
         const w=isoToWorld(col,row);
         const b=BUILDINGS[type];
         const baseH=3;
-        const baseBH=(type==='apartment')?40:(type==='office')?44:
-            (type==='industrial'||type==='powerplant')?24:(type==='stadium')?28:20;
-        const bh=baseBH*(1+(level-1)*0.25);
-
-        ctx.beginPath();
-        ctx.moveTo(w.x,w.y+baseH);ctx.lineTo(w.x+TILE_W/2,w.y+TILE_H/2+baseH);
-        ctx.lineTo(w.x,w.y+TILE_H+baseH);ctx.lineTo(w.x-TILE_W/2,w.y+TILE_H/2+baseH);
-        ctx.closePath();ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fill();
-
         const isNight=currentTime==='night'||currentTime==='dusk';
-        let topC,leftC,rightC;
-        if(type==='road'){topC=isNight?'#2a3540':'#3a4a55';leftC='#25323a';rightC='#1d2830';}
-        else if(type==='park'){topC=isNight?'#2a5a3a':'#3f8a5a';leftC='#2a5a3a';rightC='#1d4028';}
-        else if(type==='tree'){topC='#1a4a2a';leftC='#123a1e';rightC='#0d2a15';}
-        else{topC=isNight?'#1e3545':'#2d4a5a';leftC='#1a2f3c';rightC='#152630';}
-        drawTileWorld(w.x,w.y,topC,leftC,rightC,isNight?'#3a5a70':'#4f7f9a');
+        const isRealNight=currentTime==='night';
 
+        // === SPECIAL: ROAD ===
         if(type==='road'){
-            ctx.strokeStyle=isNight?'#8a8a5a':'#e6e6b3';
-            ctx.lineWidth=1.5;ctx.setLineDash([6,6]);
+            // Get neighbors to determine road orientation
+            const nE=getBuildingTypeSafe(col+1,row);
+            const nW=getBuildingTypeSafe(col-1,row);
+            const nN=getBuildingTypeSafe(col,row-1);
+            const nS=getBuildingTypeSafe(col,row+1);
+            const isE=nE==='road', isW=nW==='road', isN=nN==='road', isS=nS==='road';
+            const isIntersect=(isE||isW)&&(isN||isS);
+
+            // Base asphalt
+            drawTileWorld(w.x,w.y,
+                isNight?'#1a1f26':'#2e333b',
+                '#22262c','#1a1e24',
+                isNight?'#1a3040':'#3a4048');
+
+            // Sidewalk bands (slightly lighter edges)
+            ctx.strokeStyle=isNight?'#3a4048':'#5a6068';
+            ctx.lineWidth=0.5;
+            // Draw curb lines on edges that are NOT roads
             ctx.beginPath();
-            ctx.moveTo(w.x-TILE_W/4,w.y+TILE_H/4);
-            ctx.lineTo(w.x+TILE_W/4,w.y+TILE_H*3/4);
-            ctx.stroke();ctx.setLineDash([]);
-            return;
-        }
-        if(type==='tree'){
-            ctx.fillStyle='#3a2a1a';
-            ctx.fillRect(w.x-2,w.y+TILE_H/2-4,4,12);
-            ctx.fillStyle=isNight?'#1a4a2a':'#2f7a4a';
-            ctx.beginPath();ctx.arc(w.x,w.y+TILE_H/2-12,10,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle=isNight?'#1a5a35':'#3f8a5a';
-            ctx.beginPath();ctx.arc(w.x-6,w.y+TILE_H/2-6,7,0,Math.PI*2);ctx.fill();
-            return;
-        }
+            if(!isN){ctx.moveTo(w.x-TILE_W/2,w.y+TILE_H/2);ctx.lineTo(w.x,w.y);ctx.lineTo(w.x+TILE_W/2,w.y+TILE_H/2);}
+            if(!isS){ctx.moveTo(w.x-TILE_W/2,w.y+TILE_H/2);ctx.lineTo(w.x,w.y+TILE_H);ctx.lineTo(w.x+TILE_W/2,w.y+TILE_H/2);}
+            if(!isE){ctx.moveTo(w.x+TILE_W/2,w.y+TILE_H/2);ctx.lineTo(w.x,w.y+TILE_H);}
+            if(!isW){ctx.moveTo(w.x-TILE_W/2,w.y+TILE_H/2);ctx.lineTo(w.x,w.y+TILE_H);}
+            ctx.stroke();
 
-        const lx=w.x-TILE_W/4,rx=w.x+TILE_W/4,my=w.y+TILE_H/2;
-        const winC=isNight?'#ffd700':'#f5e56b';
+            // Center lane markings - only if road continues through
+            ctx.strokeStyle=isNight?'rgba(230,230,180,0.5)':'rgba(240,240,200,0.85)';
+            ctx.lineWidth=1.2;
+            ctx.setLineDash([4,4]);
 
-        if(level>=2){ctx.shadowColor=level===3?'#ffd700':'#c0c0ff';ctx.shadowBlur=level===3?15:8;}
-        ctx.fillStyle=b.color;
-        ctx.beginPath();
-        ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
-        ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
-        ctx.closePath();ctx.fill();
-        ctx.shadowBlur=0;
-
-        if(type==='residential'||type==='apartment'){
-            ctx.fillStyle=b.roofColor;
-            ctx.beginPath();
-            ctx.moveTo(lx-3,my-4-bh);ctx.lineTo(w.x,my-4-bh-14);ctx.lineTo(rx+3,my-4-bh);
-            ctx.closePath();ctx.fill();
-            ctx.fillStyle=winC;
-            const rows=type==='apartment'?5:2;
-            for(let wy=0;wy<rows;wy++)
-                for(let wx=0;wx<3;wx++)
-                    ctx.fillRect(lx+4+wx*10,my-12-wy*7,6,5);
-        }else if(type==='commercial'||type==='office'){
-            ctx.fillStyle=winC;
-            ctx.fillRect(lx+5,my-12,14,8);
-            ctx.fillStyle=b.roofColor;
-            ctx.fillRect(lx-2,my-4-bh-3,rx-lx+4,3);
-            if(type==='office'){
-                ctx.fillStyle=isNight?'#ff0000':'#aa0000';
-                ctx.beginPath();ctx.arc(w.x,my-4-bh-10,2,0,Math.PI*2);ctx.fill();
+            if(isN||isS){
+                // Vertical road (going north-south along the world's "row" axis)
+                const x1=w.x+TILE_W/4,y1=w.y+TILE_H/4;
+                const x2=w.x-TILE_W/4,y2=w.y+TILE_H*3/4;
+                ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
             }
-        }else if(type==='industrial'){
+            if(isE||isW){
+                const x1=w.x-TILE_W/4,y1=w.y+TILE_H/4;
+                const x2=w.x+TILE_W/4,y2=w.y+TILE_H*3/4;
+                ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+            }
+            if(isIntersect){
+                // small cross in the middle
+                ctx.setLineDash([]);
+                ctx.strokeStyle=isNight?'rgba(230,230,180,0.4)':'rgba(240,240,200,0.7)';
+                ctx.lineWidth=1;
+                ctx.beginPath();
+                ctx.moveTo(w.x-3,w.y+TILE_H/2);
+                ctx.lineTo(w.x+3,w.y+TILE_H/2);
+                ctx.moveTo(w.x,w.y+TILE_H/2-3);
+                ctx.lineTo(w.x,w.y+TILE_H/2+3);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+
+            // Street lamp at corners (only if at least one adjacent road)
+            if((isE||isW)&&!isIntersect){
+                drawStreetLamp(w.x+TILE_W/4-2,w.y+TILE_H/2+2,isRealNight);
+            } else if(isIntersect){
+                drawStreetLamp(w.x+TILE_W/4-2,w.y+TILE_H/2+2,isRealNight);
+                drawStreetLamp(w.x-TILE_W/4+2,w.y+TILE_H/2-2,isRealNight);
+            }
+            return;
+        }
+
+        // === SPECIAL: TREE ===
+        if(type==='tree'){
+            drawTileWorld(w.x,w.y,'#1a4a2a','#123a1e','#0d2a15',isNight?'#1a3a25':'#3a7045');
+            // Tree shadow
+            ctx.fillStyle='rgba(0,0,0,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(w.x,w.y+TILE_H-4,10,3,0,0,Math.PI*2);
+            ctx.fill();
+            // Trunk
+            ctx.fillStyle='#4a2a1a';
+            ctx.fillRect(w.x-2.5,w.y+TILE_H/2-4,5,14);
+            // Trunk texture
+            ctx.fillStyle='#3a1a0a';
+            ctx.fillRect(w.x-1,w.y+TILE_H/2,1,8);
+            // Foliage - multiple layers
+            const sway=Math.sin(time*1.5+col*0.5)*0.8;
+            ctx.fillStyle=isNight?'#0d2a15':'#1a5a2a';
+            ctx.beginPath();
+            ctx.arc(w.x+sway,w.y+TILE_H/2-10,13,0,Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle=isNight?'#1a4a2a':'#2f7a4a';
+            ctx.beginPath();
+            ctx.arc(w.x-4+sway,w.y+TILE_H/2-14,9,0,Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle=isNight?'#1a5a35':'#4a9a5a';
+            ctx.beginPath();
+            ctx.arc(w.x+3+sway,w.y+TILE_H/2-16,7,0,Math.PI*2);
+            ctx.fill();
+            // Highlights
+            ctx.fillStyle=isNight?'rgba(30,90,50,0.5)':'rgba(120,200,140,0.5)';
+            ctx.beginPath();
+            ctx.arc(w.x-2+sway,w.y+TILE_H/2-18,3,0,Math.PI*2);
+            ctx.fill();
+            return;
+        }
+
+        // === SPECIAL: PARK ===
+        if(type==='park'){
+            drawTileWorld(w.x,w.y,
+                isNight?'#2a5a3a':'#4a9a5a',
+                isNight?'#1d4028':'#3a7a45',
+                isNight?'#152f1e':'#2d5a35',
+                isNight?'#1a4028':'#5a9a65');
+
+            // Walking path (curved)
+            ctx.strokeStyle=isNight?'#8a8a7a':'#d4c090';
+            ctx.lineWidth=3;
+            ctx.lineCap='round';
+            ctx.beginPath();
+            ctx.moveTo(w.x-16,w.y+TILE_H-2);
+            ctx.quadraticCurveTo(w.x,w.y+TILE_H/2+2,w.x+16,w.y+TILE_H-2);
+            ctx.stroke();
+
+            // Path dots
+            ctx.fillStyle=isNight?'#6a6a5a':'#b0a080';
+            ctx.fillRect(w.x-6,w.y+TILE_H/2+4,2,2);
+            ctx.fillRect(w.x+4,w.y+TILE_H/2+3,2,2);
+
+            // Small pond
+            ctx.fillStyle=isNight?'#0a2a45':'#4a9ad4';
+            ctx.beginPath();
+            ctx.ellipse(w.x-8,w.y+TILE_H/2-6,6,3,0,0,Math.PI*2);
+            ctx.fill();
+            ctx.strokeStyle=isNight?'#1a5070':'#a0d4ff';
+            ctx.lineWidth=0.6;
+            ctx.stroke();
+
+            // Bench
+            ctx.fillStyle='#5a3a1a';
+            ctx.fillRect(w.x+6,w.y+TILE_H/2+2,8,2);
+            ctx.fillRect(w.x+6,w.y+TILE_H/2+5,1.5,4);
+            ctx.fillRect(w.x+12,w.y+TILE_H/2+5,1.5,4);
+
+            // Trees
+            const sway1=Math.sin(time*1.2+col)*0.5;
+            const sway2=Math.sin(time*1.5+col+1)*0.5;
+            // Tree 1 (left)
+            ctx.fillStyle='#4a2a1a';
+            ctx.fillRect(w.x-14,w.y+TILE_H/2-8,3,10);
+            ctx.fillStyle=isNight?'#1a5a35':'#3f8a5a';
+            ctx.beginPath();ctx.arc(w.x-12.5+sway1,w.y+TILE_H/2-16,10,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle=isNight?'#1a4a2a':'#2f7a4a';
+            ctx.beginPath();ctx.arc(w.x-16+sway1,w.y+TILE_H/2-12,7,0,Math.PI*2);ctx.fill();
+            // Tree 2 (right)
+            ctx.fillStyle='#4a2a1a';
+            ctx.fillRect(w.x+11,w.y+TILE_H/2-4,3,8);
+            ctx.fillStyle=isNight?'#1a5a35':'#3f8a5a';
+            ctx.beginPath();ctx.arc(w.x+12.5+sway2,w.y+TILE_H/2-12,8,0,Math.PI*2);ctx.fill();
+            // Flowers
+            ctx.fillStyle='#ff6b8a';
+            ctx.fillRect(w.x-2,w.y+TILE_H/2-2,2,2);
+            ctx.fillRect(w.x+2,w.y+TILE_H/2,2,2);
+            ctx.fillStyle='#ffeb3b';
+            ctx.fillRect(w.x,w.y+TILE_H/2+2,2,2);
+            return;
+        }
+
+        // ===== OTHER BUILDINGS =====
+        const baseBH=(type==='apartment')?48:(type==='office')?54:
+            (type==='industrial'||type==='powerplant')?28:(type==='stadium')?32:
+            (type==='hospital'||type==='school')?32:(type==='subway')?12:24;
+        const bh=baseBH*(1+(level-1)*0.22);
+
+        // Building shadow on ground
+        ctx.beginPath();
+        ctx.moveTo(w.x,w.y+baseH);
+        ctx.lineTo(w.x+TILE_W/2,w.y+TILE_H/2+baseH);
+        ctx.lineTo(w.x,w.y+TILE_H+baseH);
+        ctx.lineTo(w.x-TILE_W/2,w.y+TILE_H/2+baseH);
+        ctx.closePath();
+        ctx.fillStyle='rgba(0,0,0,0.4)';
+        ctx.fill();
+
+        // Ground tile
+        drawTileWorld(w.x,w.y,
+            isNight?'#1e3545':'#2d4a5a',
+            '#1a2f3c','#152630',
+            isNight?'#3a5a70':'#4f7f9a');
+
+        const lx=w.x-TILE_W/4, rx=w.x+TILE_W/4, my=w.y+TILE_H/2;
+
+        // ===== RESIDENTIAL HOUSE =====
+        if(type==='residential'){
+            // Main walls
+            ctx.fillStyle=b.color;
+            ctx.beginPath();
+            ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Side shading
+            ctx.fillStyle='rgba(0,0,0,0.15)';
+            ctx.beginPath();
+            ctx.moveTo(lx,my-4);ctx.lineTo(lx+2,my-4);
+            ctx.lineTo(lx+2,my-4-bh);ctx.lineTo(lx,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Roof (pitched)
             ctx.fillStyle=b.roofColor;
-            ctx.fillRect(lx-2,my-4-bh-3,rx-lx+4,3);
-            ctx.fillStyle='#4f3e2e';
-            ctx.fillRect(w.x-4,my-4-bh-14,8,14);
-        }else if(type==='powerplant'){
+            ctx.beginPath();
+            ctx.moveTo(lx-4,my-4-bh);
+            ctx.lineTo(w.x,my-4-bh-16);
+            ctx.lineTo(rx+4,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Roof shading
+            ctx.fillStyle='rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.moveTo(w.x,my-4-bh-16);
+            ctx.lineTo(rx+4,my-4-bh);
+            ctx.lineTo(w.x,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Chimney
+            ctx.fillStyle='#8a5a3a';
+            ctx.fillRect(w.x+8,my-4-bh-14,4,12);
+            ctx.fillStyle='#5a3a1a';
+            ctx.fillRect(w.x+8,my-4-bh-14,4,3);
+
+            // Chimney smoke (animated)
+            if(!isRealNight){
+                const smokeY=my-4-bh-18-Math.sin(time*2)*2;
+                ctx.fillStyle='rgba(200,200,200,0.4)';
+                ctx.beginPath();ctx.arc(w.x+10,smokeY,3,0,Math.PI*2);ctx.fill();
+                ctx.fillStyle='rgba(200,200,200,0.25)';
+                ctx.beginPath();ctx.arc(w.x+12,smokeY-4,2.5,0,Math.PI*2);ctx.fill();
+            }
+
+            // Door
+            ctx.fillStyle='#5a3a1a';
+            ctx.fillRect(w.x-3,my-4-14,6,14);
+            ctx.fillStyle='#3a2a1a';
+            ctx.fillRect(w.x-3,my-4-14,6,1);
+            ctx.fillStyle='#ffd700';
+            ctx.fillRect(w.x,my-4-8,1.5,1.5);
+
+            // Windows
+            const winColor=isNight?'#ffd700':'#b0e0ff';
+            ctx.fillStyle=winColor;
+            ctx.fillRect(lx+4,my-4-bh+6,7,7);
+            ctx.fillRect(rx-11,my-4-bh+6,7,7);
+            // Window frames
+            ctx.strokeStyle='#5a3a1a';
+            ctx.lineWidth=0.8;
+            ctx.strokeRect(lx+4,my-4-bh+6,7,7);
+            ctx.strokeRect(rx-11,my-4-bh+6,7,7);
+            // Window glow at night
+            if(isRealNight){
+                ctx.shadowColor='#ffd700';
+                ctx.shadowBlur=8;
+                ctx.fillStyle='rgba(255,215,0,0.6)';
+                ctx.fillRect(lx+4,my-4-bh+6,7,7);
+                ctx.fillRect(rx-11,my-4-bh+6,7,7);
+                ctx.shadowBlur=0;
+            }
+        }
+
+        // ===== APARTMENT =====
+        else if(type==='apartment'){
+            // Wall
+            ctx.fillStyle=b.color;
+            ctx.beginPath();
+            ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Side shading
+            ctx.fillStyle='rgba(0,0,0,0.18)';
+            ctx.beginPath();
+            ctx.moveTo(w.x,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(w.x,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Flat roof with edge
+            ctx.fillStyle=b.roofColor;
+            ctx.fillRect(lx-3,my-4-bh-3,rx-lx+6,4);
+            // Roof pattern
+            ctx.fillStyle='rgba(255,255,255,0.15)';
+            ctx.fillRect(lx-3,my-4-bh-3,rx-lx+6,1);
+
+            // Roof AC unit
+            ctx.fillStyle='#666';
+            ctx.fillRect(w.x-6,my-4-bh-8,8,5);
+            ctx.fillStyle='#444';
+            ctx.fillRect(w.x-5,my-4-bh-7,2,3);
+
+            // Windows grid (5 rows x 3 cols)
+            const winColor=isNight?'#ffd700':'#c8e8ff';
+            for(let wy=0;wy<5;wy++){
+                for(let wx=0;wx<3;wx++){
+                    const x=lx+4+wx*11;
+                    const y=my-14-wy*9;
+                    const isLit=Math.random()>0.3||!isNight;
+                    if(isLit){
+                        ctx.fillStyle=isNight?'#ffd700':winColor;
+                        ctx.fillRect(x,y,7,6);
+                        if(isRealNight){
+                            ctx.shadowColor='#ffd700';
+                            ctx.shadowBlur=4;
+                            ctx.fillRect(x,y,7,6);
+                            ctx.shadowBlur=0;
+                        }
+                    } else {
+                        ctx.fillStyle='#3a4a5a';
+                        ctx.fillRect(x,y,7,6);
+                    }
+                }
+            }
+        }
+
+        // ===== COMMERCIAL =====
+        else if(type==='commercial'){
+            // Wall
+            ctx.fillStyle=b.color;
+            ctx.beginPath();
+            ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
+            ctx.closePath();ctx.fill();
+            // Side shade
+            ctx.fillStyle='rgba(0,0,0,0.15)';
+            ctx.beginPath();
+            ctx.moveTo(w.x,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(w.x,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Roof with trim
+            ctx.fillStyle=b.roofColor;
+            ctx.fillRect(lx-3,my-4-bh-3,rx-lx+6,4);
+
+            // Store sign (neon)
+            ctx.fillStyle=isNight?'#ff6b00':'#ff9800';
+            ctx.fillRect(lx+4,my-4-bh+8,22,7);
+            if(isRealNight){
+                ctx.shadowColor='#ff9800';
+                ctx.shadowBlur=10;
+                ctx.fillRect(lx+4,my-4-bh+8,22,7);
+                ctx.shadowBlur=0;
+            }
+
+            // Display window (large)
+            ctx.fillStyle=isNight?'#87ceeb':'#b0e0ff';
+            ctx.fillRect(lx+3,my-14,22,10);
+            ctx.strokeStyle='#4a6a7a';
+            ctx.lineWidth=0.8;
+            ctx.strokeRect(lx+3,my-14,22,10);
+            // Window frame divider
+            ctx.beginPath();
+            ctx.moveTo(w.x,my-14);ctx.lineTo(w.x,my-4);
+            ctx.stroke();
+
+            // Door
+            ctx.fillStyle='#4a6a7a';
+            ctx.fillRect(rx-8,my-4-12,5,12);
+        }
+
+        // ===== OFFICE =====
+        else if(type==='office'){
+            // Wall
+            ctx.fillStyle=b.color;
+            ctx.beginPath();
+            ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Glass side panel
+            ctx.fillStyle='rgba(150,200,255,0.25)';
+            ctx.beginPath();
+            ctx.moveTo(w.x,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(w.x,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Flat roof
+            ctx.fillStyle=b.roofColor;
+            ctx.fillRect(lx-3,my-4-bh-3,rx-lx+6,4);
+
+            // Roof details
+            ctx.fillStyle='#666';
+            ctx.fillRect(w.x+6,my-4-bh-8,6,5);
+            ctx.fillStyle='#444';
+            ctx.fillRect(w.x+7,my-4-bh-7,2,3);
+
+            // Antenna with blinking light
+            ctx.strokeStyle='#333';
+            ctx.lineWidth=1;
+            ctx.beginPath();
+            ctx.moveTo(w.x,my-4-bh);
+            ctx.lineTo(w.x,my-4-bh-12);
+            ctx.stroke();
+            const blink=Math.sin(time*4)>0;
+            if(blink){
+                ctx.fillStyle='#ff0000';
+                ctx.shadowColor='#ff0000';
+                ctx.shadowBlur=8;
+                ctx.beginPath();
+                ctx.arc(w.x,my-4-bh-13,2,0,Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur=0;
+            }
+
+            // Windows grid (6 rows x 3 cols)
+            for(let wy=0;wy<6;wy++){
+                for(let wx=0;wx<3;wx++){
+                    const x=lx+4+wx*11;
+                    const y=my-14-wy*8;
+                    const isLit=Math.random()>0.4||!isNight;
+                    if(isLit){
+                        ctx.fillStyle=isNight?'#a0d0ff':'#c0e0ff';
+                        ctx.fillRect(x,y,7,5);
+                    } else {
+                        ctx.fillStyle='#3a4a5a';
+                        ctx.fillRect(x,y,7,5);
+                    }
+                }
+            }
+        }
+
+        // ===== INDUSTRIAL =====
+        else if(type==='industrial'){
+            // Walls
+            ctx.fillStyle=b.color;
+            ctx.beginPath();
+            ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Metal roof
+            ctx.fillStyle=b.roofColor;
+            ctx.fillRect(lx-2,my-4-bh-3,rx-lx+4,4);
+            ctx.fillStyle='#3a2a1a';
+            ctx.fillRect(lx-2,my-4-bh-3,rx-lx+4,1);
+
+            // Chimney 1
+            ctx.fillStyle='#5a4a3a';
+            ctx.fillRect(w.x-10,my-4-bh-16,7,18);
+            ctx.fillStyle='#3a2a1a';
+            ctx.fillRect(w.x-10,my-4-bh-16,7,3);
+            // Smoke
+            const smokeY1=my-4-bh-22-Math.sin(time*1.5)*3;
+            ctx.fillStyle='rgba(120,120,120,0.55)';
+            ctx.beginPath();ctx.arc(w.x-6.5,smokeY1,5,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='rgba(120,120,120,0.35)';
+            ctx.beginPath();ctx.arc(w.x-4,smokeY1-5,4,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='rgba(120,120,120,0.2)';
+            ctx.beginPath();ctx.arc(w.x-2,smokeY1-10,3,0,Math.PI*2);ctx.fill();
+
+            // Chimney 2
+            ctx.fillStyle='#5a4a3a';
+            ctx.fillRect(w.x+3,my-4-bh-12,5,14);
+            const smokeY2=my-4-bh-17-Math.sin(time*1.7+1)*2;
+            ctx.fillStyle='rgba(120,120,120,0.4)';
+            ctx.beginPath();ctx.arc(w.x+5.5,smokeY2,4,0,Math.PI*2);ctx.fill();
+
+            // Windows
+            ctx.fillStyle=isNight?'#ffd700':'#d0a060';
+            ctx.fillRect(lx+4,my-12,8,7);
+            ctx.fillRect(rx-12,my-12,8,7);
+            // Window trim
+            ctx.strokeStyle='#3a2a1a';
+            ctx.lineWidth=0.8;
+            ctx.strokeRect(lx+4,my-12,8,7);
+            ctx.strokeRect(rx-12,my-12,8,7);
+
+            // Loading dock door
+            ctx.fillStyle='#3a2a1a';
+            ctx.fillRect(w.x-4,my-4-12,8,12);
+            ctx.strokeStyle='#5a4a3a';
+            ctx.lineWidth=0.6;
+            ctx.beginPath();
+            ctx.moveTo(w.x-4,my-4-8);
+            ctx.lineTo(w.x+4,my-4-8);
+            ctx.moveTo(w.x-4,my-4-4);
+            ctx.lineTo(w.x+4,my-4-4);
+            ctx.stroke();
+        }
+
+        // ===== POWER PLANT =====
+        else if(type==='powerplant'){
+            ctx.fillStyle=b.color;
+            ctx.beginPath();
+            ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Roof
+            ctx.fillStyle=b.roofColor;
+            ctx.fillRect(lx-2,my-4-bh-3,rx-lx+4,4);
+
+            // Cooling towers (2 big circles)
             ctx.fillStyle='#6a5a4a';
             ctx.beginPath();
-            ctx.arc(lx+4,my-4-bh+4,8,0,Math.PI*2);
-            ctx.arc(rx-4,my-4-bh+4,8,0,Math.PI*2);
+            ctx.arc(lx+6,my-4-bh+8,10,0,Math.PI*2);
             ctx.fill();
-            ctx.fillStyle='#ffff00';
+            ctx.fillStyle='#8a7a6a';
             ctx.beginPath();
-            ctx.moveTo(w.x-5,my-15);ctx.lineTo(w.x+5,my-15);
-            ctx.lineTo(w.x-2,my-8);ctx.lineTo(w.x+8,my-8);
-            ctx.lineTo(w.x-5,my-22);ctx.lineTo(w.x-1,my-14);
+            ctx.arc(lx+6,my-4-bh+6,8,0,Math.PI*2);
+            ctx.fill();
+            // Tower steam
+            const steamY=my-4-bh-2-Math.sin(time*2)*3;
+            ctx.fillStyle='rgba(230,230,230,0.6)';
+            ctx.beginPath();ctx.arc(lx+6,steamY,6,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='rgba(230,230,230,0.4)';
+            ctx.beginPath();ctx.arc(lx+8,steamY-6,5,0,Math.PI*2);ctx.fill();
+
+            // Second tower
+            ctx.fillStyle='#6a5a4a';
+            ctx.beginPath();ctx.arc(rx-6,my-4-bh+8,9,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#8a7a6a';
+            ctx.beginPath();ctx.arc(rx-6,my-4-bh+6,7,0,Math.PI*2);ctx.fill();
+            const steamY2=my-4-bh-Math.sin(time*2.3+1)*3;
+            ctx.fillStyle='rgba(230,230,230,0.5)';
+            ctx.beginPath();ctx.arc(rx-6,steamY2,5,0,Math.PI*2);ctx.fill();
+
+            // Lightning bolt icon
+            ctx.fillStyle=isRealNight?'#ffff00':'#ffc107';
+            if(isRealNight){
+                ctx.shadowColor='#ffff00';
+                ctx.shadowBlur=15;
+            }
+            ctx.beginPath();
+            ctx.moveTo(w.x-4,my-14);
+            ctx.lineTo(w.x+4,my-14);
+            ctx.lineTo(w.x,my-8);
+            ctx.lineTo(w.x+6,my-8);
+            ctx.lineTo(w.x-4,my-2);
+            ctx.lineTo(w.x,my-8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowBlur=0;
+        }
+
+        // ===== SOLAR =====
+        else if(type==='solar'){
+            // Base
+            ctx.fillStyle='#3a4a5a';
+            ctx.beginPath();
+            ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
             ctx.closePath();ctx.fill();
-        }else if(type==='solar'){
-            ctx.fillStyle='#1a3a5a';
-            ctx.beginPath();ctx.ellipse(w.x,my-4-bh+4,18,10,0,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle=isNight?'#0a1a2a':'#3a6a9a';
-            ctx.beginPath();ctx.ellipse(w.x-6,my-4-bh+2,10,6,0,0,Math.PI*2);ctx.fill();
-        }else if(type==='watertower'){
-            ctx.fillStyle='#4a6a8a';
+
+            // Solar panels (tilted rectangles)
+            const panels=3;
+            for(let i=0;i<panels;i++){
+                const px=lx+6+i*13;
+                // Panel shadow
+                ctx.fillStyle='rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.moveTo(px,my-4-bh+2);
+                ctx.lineTo(px+10,my-4-bh+6);
+                ctx.lineTo(px+10,my-4-bh+8);
+                ctx.lineTo(px,my-4-bh+4);
+                ctx.closePath();
+                ctx.fill();
+                // Panel surface
+                ctx.fillStyle=isRealNight?'#0a1a2a':(isNight?'#1a3a5a':'#3a6a9a');
+                ctx.beginPath();
+                ctx.moveTo(px,my-4-bh+2);
+                ctx.lineTo(px+10,my-4-bh+6);
+                ctx.lineTo(px+10,my-4-bh);
+                ctx.lineTo(px,my-4-bh-4);
+                ctx.closePath();
+                ctx.fill();
+                // Panel grid
+                ctx.strokeStyle='rgba(255,255,255,0.2)';
+                ctx.lineWidth=0.4;
+                ctx.beginPath();
+                ctx.moveTo(px+3,my-4-bh+2.5);
+                ctx.lineTo(px+3,my-4-bh-3.5);
+                ctx.moveTo(px+7,my-4-bh+4.5);
+                ctx.lineTo(px+7,my-4-bh-1.5);
+                ctx.stroke();
+            }
+
+            // Sun glint if daytime
+            if(currentTime==='day'){
+                ctx.fillStyle='rgba(255,255,255,0.6)';
+                ctx.beginPath();
+                ctx.arc(lx+10,my-4-bh,3,0,Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        // ===== WATER TOWER =====
+        else if(type==='watertower'){
+            // Base legs
+            ctx.strokeStyle='#4a6a8a';
+            ctx.lineWidth=2;
             ctx.beginPath();
-            ctx.moveTo(w.x-4,my+4);ctx.lineTo(w.x+4,my+4);
-            ctx.lineTo(w.x+4,my-15);ctx.lineTo(w.x-4,my-15);
-            ctx.closePath();ctx.fill();
-            ctx.fillStyle=b.color;
-            ctx.beginPath();ctx.arc(w.x,my-18,14,0,Math.PI*2);ctx.fill();
-        }else if(type==='park'){
-            ctx.strokeStyle='#c0a060';ctx.lineWidth=2;
-            ctx.beginPath();
-            ctx.moveTo(w.x-12,my+4);ctx.quadraticCurveTo(w.x,my-4,w.x+12,my+4);
+            ctx.moveTo(w.x-8,my+4);ctx.lineTo(w.x-5,my-10);
+            ctx.moveTo(w.x+8,my+4);ctx.lineTo(w.x+5,my-10);
+            ctx.moveTo(w.x-8,my+4);ctx.lineTo(w.x+8,my+4);
             ctx.stroke();
-            ctx.fillStyle='#5d3a1a';
-            ctx.fillRect(w.x-2,my-4,4,8);
-            ctx.fillStyle=isNight?'#1a5a35':'#2f7a4a';
-            ctx.beginPath();ctx.arc(w.x,my-10,10,0,Math.PI*2);ctx.fill();
-        }else if(type==='hospital'){
+
+            // Cross braces
+            ctx.lineWidth=1;
+            ctx.beginPath();
+            ctx.moveTo(w.x-8,my+4);ctx.lineTo(w.x+5,my-10);
+            ctx.moveTo(w.x+8,my+4);ctx.lineTo(w.x-5,my-10);
+            ctx.stroke();
+
+            // Tank body
+            ctx.fillStyle='#6090b0';
+            ctx.beginPath();
+            ctx.arc(w.x,my-16,14,0,Math.PI*2);
+            ctx.fill();
+            // Tank shade
+            ctx.fillStyle='#4a7a9a';
+            ctx.beginPath();
+            ctx.arc(w.x,my-16,14,Math.PI*0.6,Math.PI*1.4);
+            ctx.fill();
+            // Tank highlight
+            ctx.fillStyle='rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.arc(w.x-5,my-20,4,0,Math.PI*2);
+            ctx.fill();
+            // Band
+            ctx.strokeStyle='#3a5a7a';
+            ctx.lineWidth=1;
+            ctx.beginPath();
+            ctx.arc(w.x,my-16,14,0,Math.PI*2);
+            ctx.stroke();
+
+            // Top cap
+            ctx.fillStyle='#4a7a9a';
+            ctx.beginPath();
+            ctx.ellipse(w.x,my-28,8,3,0,0,Math.PI*2);
+            ctx.fill();
+        }
+
+        // ===== HOSPITAL =====
+        else if(type==='hospital'){
+            // Main building
             ctx.fillStyle='#f0f0f0';
             ctx.beginPath();
             ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
             ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
             ctx.closePath();ctx.fill();
+            // Side shade
+            ctx.fillStyle='rgba(0,0,0,0.08)';
+            ctx.beginPath();
+            ctx.moveTo(w.x,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(w.x,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Roof
+            ctx.fillStyle='#d0d0d0';
+            ctx.fillRect(lx-3,my-4-bh-3,rx-lx+6,4);
+
+            // Red cross sign
             ctx.fillStyle='#ff3333';
-            ctx.fillRect(w.x-3,my-4-bh+8,6,14);
-            ctx.fillRect(w.x-9,my-4-bh+12,18,6);
-        }else if(type==='school'){
+            if(isRealNight){
+                ctx.shadowColor='#ff0000';
+                ctx.shadowBlur=15;
+            }
+            ctx.fillRect(w.x-3,my-4-bh+8,6,16);
+            ctx.fillRect(w.x-9,my-4-bh+13,18,6);
+            ctx.shadowBlur=0;
+
+            // Windows
+            for(let wy=0;wy<3;wy++){
+                for(let wx=0;wx<2;wx++){
+                    ctx.fillStyle=isNight?'#ffd700':'#a0e0ff';
+                    ctx.fillRect(lx+3+wx*15,my-8-wy*8,8,5);
+                    ctx.fillRect(rx-11+wx*15-3,my-8-wy*8,8,5);
+                }
+            }
+
+            // Ambulance door
+            ctx.fillStyle='#555';
+            ctx.fillRect(w.x-6,my-4-10,12,10);
+            ctx.fillStyle='#ff3333';
+            ctx.fillRect(w.x-3,my-4-8,6,3);
+        }
+
+        // ===== SCHOOL =====
+        else if(type==='school'){
+            // Main building (blue)
             ctx.fillStyle='#85a5df';
             ctx.beginPath();
             ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
             ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
             ctx.closePath();ctx.fill();
+            // Side shade
+            ctx.fillStyle='rgba(0,0,0,0.12)';
+            ctx.beginPath();
+            ctx.moveTo(w.x,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(w.x,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Roof
+            ctx.fillStyle='#5a7abf';
+            ctx.fillRect(lx-3,my-4-bh-3,rx-lx+6,4);
+
+            // Bell tower
+            ctx.fillStyle='#a5c5ff';
+            ctx.fillRect(w.x-5,my-4-bh-14,10,14);
+            ctx.fillStyle='#85a5df';
+            ctx.fillRect(w.x-5,my-4-bh-14,10,2);
+            // Bell
             ctx.fillStyle='#ffdd44';
-            ctx.beginPath();ctx.arc(w.x,my-4-bh-12,4,0,Math.PI*2);ctx.fill();
-        }else if(type==='stadium'){
-            ctx.fillStyle='#d5d5b5';
-            ctx.beginPath();ctx.ellipse(w.x,my-4-bh/2,20,12,0,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle='#3f8a5a';
-            ctx.beginPath();ctx.ellipse(w.x,my-4-bh/2,12,6,0,0,Math.PI*2);ctx.fill();
-        }else if(type==='subway'){
-            ctx.fillStyle='#7070a0';
-            ctx.fillRect(lx+4,my-4-bh,rx-lx-8,bh);
-            ctx.fillStyle='#ffffff';
-            ctx.font='bold 10px sans-serif';ctx.textAlign='center';
-            ctx.fillText('M',w.x,my-8);
+            ctx.beginPath();
+            ctx.arc(w.x,my-4-bh-16,5,0,Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle='#a08030';
+            ctx.fillRect(w.x-1,my-4-bh-21,2,2);
+
+            // Windows (rows)
+            for(let wy=0;wy<3;wy++){
+                for(let wx=0;wx<3;wx++){
+                    ctx.fillStyle=isNight?'#ffd700':'#c0e0ff';
+                    ctx.fillRect(lx+3+wx*10,my-8-wy*8,6,5);
+                    ctx.fillRect(rx-9+wx*10-3,my-8-wy*8,6,5);
+                }
+            }
+
+            // Door
+            ctx.fillStyle='#4a6aaf';
+            ctx.fillRect(w.x-4,my-4-10,8,10);
+            ctx.fillStyle='#ffdd44';
+            ctx.beginPath();
+            ctx.arc(w.x,my-4-5,1,0,Math.PI*2);
+            ctx.fill();
         }
 
-        if(level>1){
-            const starY=my-4-bh-6;
-            for(let i=0;i<level;i++){
-                ctx.fillStyle=level===3?'#ffd700':'#c0c0ff';
-                ctx.beginPath();ctx.arc(w.x-5+i*5,starY,2.5,0,Math.PI*2);ctx.fill();
+        // ===== STADIUM =====
+        else if(type==='stadium'){
+            // Oval base
+            ctx.fillStyle='#d5d5b5';
+            ctx.beginPath();
+            ctx.ellipse(w.x,my-4-bh/2,22,13,0,0,Math.PI*2);
+            ctx.fill();
+            // Inner ring
+            ctx.fillStyle='#a5a585';
+            ctx.beginPath();
+            ctx.ellipse(w.x,my-4-bh/2,18,10,0,0,Math.PI*2);
+            ctx.fill();
+            // Field (green)
+            ctx.fillStyle='#3f8a5a';
+            ctx.beginPath();
+            ctx.ellipse(w.x,my-4-bh/2,13,6.5,0,0,Math.PI*2);
+            ctx.fill();
+            // Field lines
+            ctx.strokeStyle='rgba(255,255,255,0.6)';
+            ctx.lineWidth=0.5;
+            ctx.beginPath();
+            ctx.moveTo(w.x-10,my-4-bh/2);
+            ctx.lineTo(w.x+10,my-4-bh/2);
+            ctx.stroke();
+            // Center circle
+            ctx.beginPath();
+            ctx.arc(w.x,my-4-bh/2,3,0,Math.PI*2);
+            ctx.stroke();
+
+            // Stadium lights (4 corners)
+            const lightColor=isRealNight?'#ffff88':'#888';
+            if(isRealNight){
+                ctx.shadowColor='#ffff00';
+                ctx.shadowBlur=15;
+            }
+            ctx.fillStyle=lightColor;
+            ctx.beginPath();
+            ctx.arc(w.x-18,my-4-bh/2-6,2,0,Math.PI*2);
+            ctx.arc(w.x+18,my-4-bh/2-6,2,0,Math.PI*2);
+            ctx.arc(w.x-18,my-4-bh/2+6,2,0,Math.PI*2);
+            ctx.arc(w.x+18,my-4-bh/2+6,2,0,Math.PI*2);
+            ctx.fill();
+            ctx.shadowBlur=0;
+        }
+
+        // ===== SUBWAY =====
+        else if(type==='subway'){
+            // Entrance base
+            ctx.fillStyle='#7070a0';
+            ctx.beginPath();
+            ctx.moveTo(lx,my-4);ctx.lineTo(rx,my-4);
+            ctx.lineTo(rx,my-4-bh);ctx.lineTo(lx,my-4-bh);
+            ctx.closePath();ctx.fill();
+
+            // Roof canopy
+            ctx.fillStyle='#505080';
+            ctx.fillRect(lx-3,my-4-bh-3,rx-lx+6,5);
+            ctx.fillStyle='#404070';
+            ctx.fillRect(lx-3,my-4-bh-3,rx-lx+6,1);
+
+            // "M" sign
+            ctx.fillStyle='#ffffff';
+            ctx.font='bold 11px sans-serif';
+            ctx.textAlign='center';
+            ctx.fillText('M',w.x,my-8);
+
+            // Stairs going down
+            ctx.fillStyle='#3a3a5a';
+            ctx.beginPath();
+            ctx.moveTo(w.x-6,my-4);
+            ctx.lineTo(w.x-6,my-4-4);
+            ctx.lineTo(w.x+6,my-4-4);
+            ctx.lineTo(w.x+6,my-4);
+            ctx.closePath();
+            ctx.fill();
+            // Step lines
+            ctx.strokeStyle='#5a5a7a';
+            ctx.lineWidth=0.4;
+            for(let i=0;i<3;i++){
+                ctx.beginPath();
+                ctx.moveTo(w.x-6+i*2,my-4-i*1.3);
+                ctx.lineTo(w.x+6-i*2,my-4-i*1.3);
+                ctx.stroke();
+            }
+
+            // Light glow at night
+            if(isRealNight){
+                ctx.fillStyle='rgba(200,200,255,0.3)';
+                ctx.beginPath();
+                ctx.arc(w.x,my-6,12,0,Math.PI*2);
+                ctx.fill();
             }
         }
+
+        // Level stars above building
+        if(level>1){
+            const starY=my-4-bh-22;
+            for(let i=0;i<level;i++){
+                const sx=w.x-8+i*8;
+                drawStar(sx,starY,4,7,level===3?'#ffd700':(level===2?'#c0c0ff':'#a0a0ff'));
+            }
+        }
+
+        // Selection ring
         if(selectedCell&&selectedCell.r===row&&selectedCell.c===col){
             ctx.strokeStyle='#ffd700';
             ctx.lineWidth=3/zoom;
-            ctx.setLineDash([4,4]);
+            ctx.setLineDash([5,3]);
             ctx.beginPath();
-            ctx.moveTo(w.x,w.y);ctx.lineTo(w.x+TILE_W/2,w.y+TILE_H/2);
-            ctx.lineTo(w.x,w.y+TILE_H);ctx.lineTo(w.x-TILE_W/2,w.y+TILE_H/2);
-            ctx.closePath();ctx.stroke();
+            ctx.moveTo(w.x,w.y-4);
+            ctx.lineTo(w.x+TILE_W/2,w.y+TILE_H/2-4);
+            ctx.lineTo(w.x,w.y+TILE_H-4);
+            ctx.lineTo(w.x-TILE_W/2,w.y+TILE_H/2-4);
+            ctx.closePath();
+            ctx.stroke();
             ctx.setLineDash([]);
         }
     }
 
+    function getBuildingTypeSafe(r,c){
+        if(r<0||r>=ROWS||c<0||c>=COLS)return null;
+        return grid[r][c]?grid[r][c].type:null;
+    }
+
+    function drawStar(cx,cy,r1,r2,color){
+        ctx.beginPath();
+        for(let i=0;i<5;i++){
+            const a=(Math.PI/2)+i*(Math.PI*2/5);
+            const a2=a+Math.PI/5;
+            ctx.lineTo(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1);
+            ctx.lineTo(cx+Math.cos(a2)*r2,cy+Math.sin(a2)*r2);
+        }
+        ctx.closePath();
+        ctx.fillStyle=color;
+        ctx.fill();
+    }
+
+    // === DETAILED CITIZEN DRAWING ===
+    function drawCitizen(x,y,a,isNight){
+        const bob=Math.sin(a.bobPhase)*0.8;
+        const swing=Math.sin(a.bobPhase)*2.2;
+        const armSwing=Math.sin(a.armPhase)*2;
+
+        // Shadow
+        ctx.fillStyle='rgba(0,0,0,0.4)';
+        ctx.beginPath();
+        ctx.ellipse(x,y+2,4,1.8,0,0,Math.PI*2);
+        ctx.fill();
+
+        // === LEGS (behind body) ===
+        ctx.strokeStyle='#333';
+        ctx.lineWidth=1.5;
+        ctx.lineCap='round';
+        ctx.beginPath();
+        // Leg 1
+        ctx.moveTo(x-1,y-6);
+        ctx.lineTo(x-1+swing*0.5,y);
+        // Leg 2
+        ctx.moveTo(x+1,y-6);
+        ctx.lineTo(x+1-swing*0.5,y);
+        ctx.stroke();
+
+        // Shoes
+        ctx.fillStyle='#1a1a1a';
+        ctx.fillRect(x-1+swing*0.5-1,y-1,3,2);
+        ctx.fillRect(x+1-swing*0.5-1,y-1,3,2);
+
+        // === BODY ===
+        ctx.fillStyle=a.bodyColor;
+        ctx.beginPath();
+        ctx.ellipse(x,y-9+bob,3.5,5,0,0,Math.PI*2);
+        ctx.fill();
+
+        // Body outline (subtle)
+        ctx.strokeStyle='rgba(0,0,0,0.25)';
+        ctx.lineWidth=0.5;
+        ctx.stroke();
+
+        // === ARMS ===
+        ctx.strokeStyle=a.bodyColor;
+        ctx.lineWidth=1.8;
+        ctx.lineCap='round';
+        ctx.beginPath();
+        // Left arm
+        ctx.moveTo(x-3,y-11+bob);
+        ctx.lineTo(x-4+armSwing,y-6+bob);
+        // Right arm
+        ctx.moveTo(x+3,y-11+bob);
+        ctx.lineTo(x+4-armSwing,y-6+bob);
+        ctx.stroke();
+
+        // Hands
+        ctx.fillStyle='#ffe0b2';
+        ctx.beginPath();
+        ctx.arc(x-4+armSwing,y-6+bob,1,0,Math.PI*2);
+        ctx.arc(x+4-armSwing,y-6+bob,1,0,Math.PI*2);
+        ctx.fill();
+
+        // === HEAD ===
+        ctx.fillStyle=a.headColor;
+        ctx.beginPath();
+        ctx.arc(x,y-15+bob,3.2,0,Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle='rgba(0,0,0,0.3)';
+        ctx.lineWidth=0.5;
+        ctx.stroke();
+
+        // Hair (dark)
+        ctx.fillStyle='#4a2a1a';
+        ctx.beginPath();
+        ctx.arc(x,y-16+bob,3.2,Math.PI*1.1,Math.PI*1.9);
+        ctx.fill();
+
+        // Eyes (2 small dots)
+        ctx.fillStyle='#000';
+        ctx.fillRect(x-1.5,y-15.5+bob,0.8,0.8);
+        ctx.fillRect(x+0.7,y-15.5+bob,0.8,0.8);
+
+        // Occasional hat/accessory
+        if(a.vehicleType%3===0){
+            ctx.fillStyle='#333';
+            ctx.fillRect(x-3,y-18.5+bob,6,1.5);
+        }
+    }
+
+    // === DETAILED VEHICLE DRAWING ===
+    function drawVehicle(x,y,a,isNight){
+        const w=10,h=6;
+        // Shadow under car
+        ctx.fillStyle='rgba(0,0,0,0.4)';
+        ctx.beginPath();
+        ctx.ellipse(x,y+2,7,2.5,0,0,Math.PI*2);
+        ctx.fill();
+
+        const bodyColor=a.bodyColor;
+
+        if(a.vehicleType===0){
+            // ===== SEDAN =====
+            // Lower chassis
+            ctx.fillStyle=bodyColor;
+            ctx.beginPath();
+            ctx.moveTo(x-7,y);
+            ctx.lineTo(x+7,y);
+            ctx.lineTo(x+6,y-4);
+            ctx.lineTo(x-6,y-4);
+            ctx.closePath();
+            ctx.fill();
+
+            // Upper cabin
+            ctx.fillStyle=bodyColor;
+            ctx.beginPath();
+            ctx.moveTo(x-4,y-4);
+            ctx.lineTo(x+4,y-4);
+            ctx.lineTo(x+3,y-8);
+            ctx.lineTo(x-3,y-8);
+            ctx.closePath();
+            ctx.fill();
+
+            // Windshield
+            ctx.fillStyle=isNight?'#5a8fc8':'#a0d0ff';
+            ctx.beginPath();
+            ctx.moveTo(x-3.5,y-4);
+            ctx.lineTo(x+3.5,y-4);
+            ctx.lineTo(x+2.5,y-7);
+            ctx.lineTo(x-2.5,y-7);
+            ctx.closePath();
+            ctx.fill();
+
+            // Side windows
+            ctx.fillStyle=isNight?'#3a6a9a':'#7aaee0';
+            ctx.fillRect(x-4,y-4,3,3);
+            ctx.fillRect(x+1,y-4,3,3);
+
+            // Wheels
+            ctx.fillStyle='#1a1a1a';
+            ctx.beginPath();
+            ctx.arc(x-4,y+0.5,1.8,0,Math.PI*2);
+            ctx.arc(x+4,y+0.5,1.8,0,Math.PI*2);
+            ctx.fill();
+            // Wheel hubs
+            ctx.fillStyle='#888';
+            ctx.beginPath();
+            ctx.arc(x-4,y+0.5,0.7,0,Math.PI*2);
+            ctx.arc(x+4,y+0.5,0.7,0,Math.PI*2);
+            ctx.fill();
+
+            // Headlight
+            if(isNight){
+                ctx.fillStyle='#ffff99';
+                ctx.shadowColor='#ffff00';
+                ctx.shadowBlur=8;
+                ctx.beginPath();
+                ctx.arc(x+7,y-2,1.3,0,Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur=0;
+                // Headlight beam
+                ctx.fillStyle='rgba(255,255,150,0.15)';
+                ctx.beginPath();
+                ctx.moveTo(x+7,y-2);
+                ctx.lineTo(x+20,y-6);
+                ctx.lineTo(x+20,y+2);
+                ctx.closePath();
+                ctx.fill();
+            }
+            // Brake light if slowing
+            if(a.velocity<a.baseSpeed*0.5||a.state==='visiting'){
+                ctx.fillStyle='#ff2222';
+                ctx.shadowColor='#ff0000';
+                ctx.shadowBlur=6;
+                ctx.beginPath();
+                ctx.arc(x-7,y-2,1.2,0,Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur=0;
+            } else {
+                ctx.fillStyle='#c00';
+                ctx.beginPath();
+                ctx.arc(x-7,y-2,1,0,Math.PI*2);
+                ctx.fill();
+            }
+        }
+        else if(a.vehicleType===1){
+            // ===== VAN =====
+            ctx.fillStyle=bodyColor;
+            ctx.beginPath();
+            ctx.moveTo(x-8,y);
+            ctx.lineTo(x+8,y);
+            ctx.lineTo(x+7,y-7);
+            ctx.lineTo(x-7,y-7);
+            ctx.closePath();
+            ctx.fill();
+
+            // Front windshield
+            ctx.fillStyle=isNight?'#5a8fc8':'#a0d0ff';
+            ctx.fillRect(x+3,y-6.5,3.5,3);
+
+            // Side windows
+            ctx.fillStyle=isNight?'#3a6a9a':'#7aaee0';
+            ctx.fillRect(x-6,y-6.5,3,3);
+            ctx.fillRect(x-2,y-6.5,3,3);
+
+            // Sliding door
+            ctx.strokeStyle='rgba(0,0,0,0.3)';
+            ctx.lineWidth=0.5;
+            ctx.beginPath();
+            ctx.moveTo(x+1,y-7);
+            ctx.lineTo(x+1,y);
+            ctx.stroke();
+
+            // Wheels
+            ctx.fillStyle='#1a1a1a';
+            ctx.beginPath();
+            ctx.arc(x-5,y+0.5,2,0,Math.PI*2);
+            ctx.arc(x+5,y+0.5,2,0,Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle='#888';
+            ctx.beginPath();
+            ctx.arc(x-5,y+0.5,0.8,0,Math.PI*2);
+            ctx.arc(x+5,y+0.5,0.8,0,Math.PI*2);
+            ctx.fill();
+
+            // Headlight
+            if(isNight){
+                ctx.fillStyle='#ffff99';
+                ctx.shadowColor='#ffff00';
+                ctx.shadowBlur=8;
+                ctx.beginPath();
+                ctx.arc(x+8,y-2.5,1.3,0,Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur=0;
+            }
+        }
+        else {
+            // ===== TRUCK =====
+            // Cab
+            ctx.fillStyle=bodyColor;
+            ctx.beginPath();
+            ctx.moveTo(x+2,y);
+            ctx.lineTo(x+9,y);
+            ctx.lineTo(x+8,y-7);
+            ctx.lineTo(x+3,y-7);
+            ctx.closePath();
+            ctx.fill();
+
+            // Cab window
+            ctx.fillStyle=isNight?'#5a8fc8':'#a0d0ff';
+            ctx.fillRect(x+4,y-6.5,3.5,3);
+
+            // Cargo box
+            ctx.fillStyle='#a0a0a0';
+            ctx.fillRect(x-9,y-7,11,7);
+            ctx.strokeStyle='#5a5a5a';
+            ctx.lineWidth=0.5;
+            ctx.strokeRect(x-9,y-7,11,7);
+
+            // Cargo lines
+            ctx.strokeStyle='rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.moveTo(x-6,y-7);ctx.lineTo(x-6,y);
+            ctx.moveTo(x-3,y-7);ctx.lineTo(x-3,y);
+            ctx.moveTo(x,y-7);ctx.lineTo(x,y);
+            ctx.stroke();
+
+            // Wheels
+            ctx.fillStyle='#1a1a1a';
+            ctx.beginPath();
+            ctx.arc(x-6,y+0.5,2.2,0,Math.PI*2);
+            ctx.arc(x-2,y+0.5,2.2,0,Math.PI*2);
+            ctx.arc(x+6,y+0.5,2.2,0,Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle='#888';
+            ctx.beginPath();
+            ctx.arc(x-6,y+0.5,0.9,0,Math.PI*2);
+            ctx.arc(x-2,y+0.5,0.9,0,Math.PI*2);
+            ctx.arc(x+6,y+0.5,0.9,0,Math.PI*2);
+            ctx.fill();
+
+            // Headlight
+            if(isNight){
+                ctx.fillStyle='#ffff99';
+                ctx.shadowColor='#ffff00';
+                ctx.shadowBlur=8;
+                ctx.beginPath();
+                ctx.arc(x+9,y-2.5,1.3,0,Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur=0;
+            }
+        }
+    }
+
+    // === CLOUDS ===
+    function updateClouds(){
+        if(clouds.length<4&&Math.random()<0.005){
+            clouds.push({
+                x:-100,
+                y:30+Math.random()*100,
+                vx:0.3+Math.random()*0.4,
+                size:0.6+Math.random()*0.8,
+                alpha:0.15+Math.random()*0.15
+            });
+        }
+        for(let i=clouds.length-1;i>=0;i--){
+            const c=clouds[i];
+            c.x+=c.vx;
+            if(c.x>canvasW+100)clouds.splice(i,1);
+        }
+    }
+
+    function drawClouds(){
+        clouds.forEach(c=>{
+            const r=20*c.size;
+            ctx.fillStyle='rgba(255,255,255,'+c.alpha+')';
+            ctx.beginPath();
+            ctx.arc(c.x,c.y,r,0,Math.PI*2);
+            ctx.arc(c.x+r*0.7,c.y-r*0.2,r*0.8,0,Math.PI*2);
+            ctx.arc(c.x-r*0.6,c.y-r*0.1,r*0.7,0,Math.PI*2);
+            ctx.arc(c.x+r*0.2,c.y-r*0.5,r*0.6,0,Math.PI*2);
+            ctx.fill();
+        });
+    }
+
+    // === BIRDS ===
+    function updateBirds(){
+        if(birds.length<3&&Math.random()<0.003&&currentTime==='day'){
+            birds.push({
+                x:-20,
+                y:60+Math.random()*80,
+                vx:0.8+Math.random()*0.6,
+                wingPhase:0,
+                size:3+Math.random()*2,
+                alive:1.0
+            });
+        }
+        for(let i=birds.length-1;i>=0;i--){
+            const b=birds[i];
+            b.x+=b.vx;
+            b.wingPhase+=0.15;
+            if(b.x>canvasW+30)birds.splice(i,1);
+        }
+    }
+
+    function drawBirds(){
+        ctx.strokeStyle='rgba(30,30,30,0.7)';
+        ctx.lineWidth=1.2;
+        ctx.lineCap='round';
+        birds.forEach(b=>{
+            const w=Math.abs(Math.sin(b.wingPhase))*b.size;
+            ctx.beginPath();
+            ctx.moveTo(b.x-b.size,b.y);
+            ctx.lineTo(b.x,b.y-w*0.5);
+            ctx.lineTo(b.x+b.size,b.y);
+            ctx.stroke();
+        });
+    }
+
+    // === MAIN WORLD RENDER ===
     function drawWorld(){
         let skyTop,skyBottom;
-        if(currentTime==='dawn'){skyTop='#1a0f2a';skyBottom='#6a3a5a';}
-        else if(currentTime==='day'){skyTop='#0a1520';skyBottom='#1a3a4a';}
-        else if(currentTime==='dusk'){skyTop='#2a0a1a';skyBottom='#7a3a2a';}
+        if(currentTime==='dawn'){skyTop='#2a1a3a';skyBottom='#7a4a5a';}
+        else if(currentTime==='day'){skyTop='#2a5a8a';skyBottom='#8ac0e0';}
+        else if(currentTime==='dusk'){skyTop='#3a1a2a';skyBottom='#9a5a3a';}
         else{skyTop='#030810';skyBottom='#08141c';}
 
         const sg=ctx.createLinearGradient(0,0,0,canvasH);
         sg.addColorStop(0,skyTop);sg.addColorStop(1,skyBottom);
         ctx.fillStyle=sg;ctx.fillRect(0,0,canvasW,canvasH);
 
-        if(currentTime!=='day'){
-            ctx.fillStyle='rgba(255,255,255,'+(currentTime==='night'?0.8:0.4)+')';
-            for(let i=0;i<60;i++){
+        // Stars at night
+        if(currentTime==='night'||currentTime==='dawn'){
+            ctx.fillStyle='rgba(255,255,255,'+(currentTime==='night'?0.85:0.35)+')';
+            for(let i=0;i<80;i++){
                 const sx=(i*137*7919)%canvasW;
                 const sy=(i*137*104729)%(canvasH*0.5);
-                ctx.beginPath();ctx.arc(sx,sy,0.5+(i%4)*0.4,0,Math.PI*2);ctx.fill();
+                const tw=Math.sin(time*2+i)*0.3+0.7;
+                ctx.beginPath();ctx.arc(sx,sy,(0.5+(i%4)*0.3)*tw,0,Math.PI*2);ctx.fill();
             }
         }
 
+        // Sun/Moon
         if(currentTime==='day'){
-            const sunGrad=ctx.createRadialGradient(canvasW-80,60,5,canvasW-80,60,50);
-            sunGrad.addColorStop(0,'#ffff88');sunGrad.addColorStop(1,'rgba(255,200,50,0)');
-            ctx.fillStyle=sunGrad;ctx.beginPath();ctx.arc(canvasW-80,60,50,0,Math.PI*2);ctx.fill();
-        }else if(currentTime==='night'){
-            ctx.fillStyle='#f0f8ff';ctx.beginPath();ctx.arc(canvasW-80,60,14,0,Math.PI*2);ctx.fill();
+            const sunGrad=ctx.createRadialGradient(canvasW-80,60,5,canvasW-80,60,60);
+            sunGrad.addColorStop(0,'#ffffcc');
+            sunGrad.addColorStop(0.3,'#ffdd44');
+            sunGrad.addColorStop(1,'rgba(255,200,50,0)');
+            ctx.fillStyle=sunGrad;
+            ctx.beginPath();ctx.arc(canvasW-80,60,60,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#ffffaa';
+            ctx.beginPath();ctx.arc(canvasW-80,60,20,0,Math.PI*2);ctx.fill();
+        } else if(currentTime==='night'){
+            // Moon
+            ctx.fillStyle='#f0f8ff';
+            ctx.beginPath();ctx.arc(canvasW-80,60,16,0,Math.PI*2);ctx.fill();
+            // Craters
+            ctx.fillStyle='rgba(180,200,220,0.4)';
+            ctx.beginPath();
+            ctx.arc(canvasW-85,55,3,0,Math.PI*2);
+            ctx.arc(canvasW-75,65,2,0,Math.PI*2);
+            ctx.arc(canvasW-78,52,2,0,Math.PI*2);
+            ctx.fill();
+            // Moon glow
+            ctx.fillStyle='rgba(200,220,255,0.1)';
+            ctx.beginPath();ctx.arc(canvasW-80,60,35,0,Math.PI*2);ctx.fill();
+        } else if(currentTime==='dawn'||currentTime==='dusk'){
+            // Partial sun
+            ctx.fillStyle=currentTime==='dawn'?'#ff8a5a':'#ff5a3a';
+            ctx.beginPath();ctx.arc(canvasW-80,canvasH-40,35,Math.PI,0);ctx.fill();
         }
 
-        // === ZOOM / PAN TRANSFORM ===
+        // Clouds (above the world)
+        drawClouds();
+
+        // === ZOOM / PAN ===
         ctx.save();
         ctx.translate(canvasW/2,canvasH/2);
         ctx.scale(zoom,zoom);
         ctx.translate(-camX,-camY);
 
         const isNight=currentTime==='night';
+        const isDusk=currentTime==='dusk';
 
+        // Terrain
         for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
             const w=isoToWorld(c,r);
             drawTerrain(w.x,w.y,terrain[r][c],isNight);
         }
 
+        // Empty grid outlines
         for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
             if(terrain[r][c]==='water')continue;
             if(!grid[r][c]){
@@ -1462,11 +2638,12 @@ const AudioEngine=(function(){
                 ctx.moveTo(w.x,w.y);ctx.lineTo(w.x+TILE_W/2,w.y+TILE_H/2);
                 ctx.lineTo(w.x,w.y+TILE_H);ctx.lineTo(w.x-TILE_W/2,w.y+TILE_H/2);
                 ctx.closePath();
-                ctx.strokeStyle=isNight?'rgba(60,90,110,0.4)':'rgba(80,120,140,0.3)';
-                ctx.lineWidth=0.6;ctx.stroke();
+                ctx.strokeStyle=isNight?'rgba(60,90,110,0.35)':'rgba(80,120,140,0.25)';
+                ctx.lineWidth=0.5;ctx.stroke();
             }
         }
 
+        // Buildings sorted by depth
         const cells=[];
         for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)
             if(grid[r][c])cells.push({r,c,depth:r+c});
@@ -1476,6 +2653,7 @@ const AudioEngine=(function(){
             drawBuildingWorld(cell.c,cell.r,b.type,b.level);
         }
 
+        // Agents (citizens + vehicles) sorted by depth
         const sortedAgents=agents.slice().sort((a,b)=>{
             const ay=a.homeRoad.r+a.homeRoad.c+(a.targetBuilding.r+a.targetBuilding.c-a.homeRoad.r-a.homeRoad.c)*a.progress;
             const by=b.homeRoad.r+b.homeRoad.c+(b.targetBuilding.r+b.targetBuilding.c-b.homeRoad.r-b.homeRoad.c)*b.progress;
@@ -1488,28 +2666,13 @@ const AudioEngine=(function(){
             const sx=rp.x,sy=rp.y+TILE_H/2;
             const ex=bp.x,ey=bp.y+TILE_H/2;
             const x=sx+(ex-sx)*t;
-            const bob=a.type!=='vehicle'?Math.sin(a.bobPhase)*1.2:0;
-            const y=sy+(ey-sy)*t+bob;
+            const y=sy+(ey-sy)*t;
 
-            ctx.fillStyle='rgba(0,0,0,0.35)';
-            ctx.beginPath();
-            ctx.ellipse(x,y+3,a.size*0.9,a.size*0.45,0,0,Math.PI*2);
-            ctx.fill();
-
-            if(a.type==='vehicle'){
-                const w=a.size*2.2,h=a.size*1.1;
-                ctx.fillStyle=a.color;
-                ctx.fillRect(x-w/2,y-h/2,w,h);
-                ctx.fillStyle='rgba(180,220,255,0.9)';
-                ctx.fillRect(x-w/4,y-h/2+1,w/2,h/2.5);
-            }else{
-                ctx.fillStyle=a.color;
-                ctx.beginPath();ctx.arc(x,y-a.size/2,a.size*0.7,0,Math.PI*2);ctx.fill();
-                ctx.fillStyle='#ffe0b2';
-                ctx.beginPath();ctx.arc(x,y-a.size*1.4,a.size*0.5,0,Math.PI*2);ctx.fill();
-            }
+            if(a.type==='vehicle') drawVehicle(x,y,a,isNight);
+            else drawCitizen(x,y,a,isNight);
         }
 
+        // Hover highlight
         if(hoverCol!==null&&hoverRow!==null&&hoverCol>=0&&hoverCol<COLS&&hoverRow>=0&&hoverRow<ROWS){
             const w=isoToWorld(hoverCol,hoverRow);
             const canBuild=terrain[hoverRow][hoverCol]!=='water';
@@ -1524,30 +2687,48 @@ const AudioEngine=(function(){
             ctx.fill();
         }
 
+        // Birds above everything (still inside world transform for parallax)
+        drawBirds();
+
         ctx.restore();
 
-        if(currentTime==='night'){ctx.fillStyle='rgba(0,10,30,0.35)';ctx.fillRect(0,0,canvasW,canvasH);}
-        else if(currentTime==='dusk'){ctx.fillStyle='rgba(120,40,20,0.18)';ctx.fillRect(0,0,canvasW,canvasH);}
-        else if(currentTime==='dawn'){ctx.fillStyle='rgba(60,20,80,0.18)';ctx.fillRect(0,0,canvasW,canvasH);}
+        // === TIME OVERLAYS (screen space) ===
+        if(currentTime==='night'){ctx.fillStyle='rgba(0,10,30,0.4)';ctx.fillRect(0,0,canvasW,canvasH);}
+        else if(currentTime==='dusk'){ctx.fillStyle='rgba(120,40,20,0.22)';ctx.fillRect(0,0,canvasW,canvasH);}
+        else if(currentTime==='dawn'){ctx.fillStyle='rgba(60,20,80,0.22)';ctx.fillRect(0,0,canvasW,canvasH);}
 
+        // === WEATHER ===
         if(weather==='rain'||weather==='storm'){
-            ctx.strokeStyle='rgba(180,220,255,0.5)';ctx.lineWidth=1;
-            const intensity=weather==='storm'?40:20;
+            ctx.strokeStyle='rgba(180,220,255,0.5)';
+            ctx.lineWidth=1;
+            const intensity=weather==='storm'?60:35;
             for(let i=0;i<intensity;i++){
                 const x=(i*137+time*3)%canvasW;
                 const y=(i*293+time*15)%canvasH;
                 ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-3,y+10);ctx.stroke();
             }
-        }else if(weather==='snow'){
-            ctx.fillStyle='rgba(255,255,255,0.8)';
-            for(let i=0;i<30;i++){
+            // Storm flash
+            if(weather==='storm'&&Math.random()<0.01){
+                ctx.fillStyle='rgba(255,255,255,0.3)';
+                ctx.fillRect(0,0,canvasW,canvasH);
+            }
+        } else if(weather==='snow'){
+            ctx.fillStyle='rgba(255,255,255,0.85)';
+            for(let i=0;i<50;i++){
                 const x=(i*137+Math.sin(time*0.02+i)*30)%canvasW;
                 const y=(i*293+time*2)%canvasH;
-                ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();
+                ctx.beginPath();ctx.arc(x,y,1.5+(i%3)*0.5,0,Math.PI*2);ctx.fill();
             }
-        }else if(weather==='fog'){
-            ctx.fillStyle='rgba(200,220,230,0.15)';ctx.fillRect(0,0,canvasW,canvasH);
+        } else if(weather==='fog'){
+            ctx.fillStyle='rgba(200,220,230,0.18)';
+            ctx.fillRect(0,0,canvasW,canvasH);
         }
+
+        // Vignette
+        const vig=ctx.createRadialGradient(canvasW/2,canvasH/2,Math.min(canvasW,canvasH)*0.35,canvasW/2,canvasH/2,Math.max(canvasW,canvasH)*0.75);
+        vig.addColorStop(0,'rgba(0,0,0,0)');
+        vig.addColorStop(1,'rgba(0,0,0,0.35)');
+        ctx.fillStyle=vig;ctx.fillRect(0,0,canvasW,canvasH);
     }
 
     function updateSelectedInfo(){
@@ -1609,7 +2790,7 @@ const AudioEngine=(function(){
         totalBuildingsPlaced++;
         selectedCell={r:row,c:col};
         recalcStats();
-        if(currentTool==='road')for(let i=0;i<2;i++)spawnAgent();
+        if(currentTool==='road')for(let i=0;i<3;i++)spawnAgent();
         AudioEngine.playSFX('build');
         addXP(5+Math.floor(b.cost/20));
         updateSelectedInfo();
@@ -1772,7 +2953,6 @@ const AudioEngine=(function(){
 
     canvas.addEventListener('touchcancel',function(){touchState.mode='none';touchState.moved=false;});
 
-    // === ZOOM BUTTONS ===
     document.getElementById('zoomIn').addEventListener('click',function(){zoomBy(1.25);AudioEngine.playSFX('click');});
     document.getElementById('zoomOut').addEventListener('click',function(){zoomBy(1/1.25);AudioEngine.playSFX('click');});
     document.getElementById('zoomReset').addEventListener('click',function(){
@@ -1865,7 +3045,6 @@ const AudioEngine=(function(){
         selectedCell=null;recalcStats();
     }
 
-    // === RESEARCH ===
     function research(name){
         const r=RESEARCH[name];
         if(!r)return;
@@ -1881,7 +3060,6 @@ const AudioEngine=(function(){
         AudioEngine.playSFX('research');addXP(50);recalcStats();
     }
 
-    // === POLICIES ===
     function togglePolicy(policy){
         policies[policy]=!policies[policy];
         const btn=document.getElementById('policy'+policy.charAt(0).toUpperCase()+policy.slice(1));
@@ -2042,7 +3220,6 @@ const AudioEngine=(function(){
         lastFrame=now;
         frameCount++;
 
-        // Verify canvas dimensions on early frames — catches late layout
         if(frameCount<10){
             const rect=canvasArea.getBoundingClientRect();
             if(Math.abs(rect.width-canvasW)>2||Math.abs(rect.height-canvasH)>2){
@@ -2054,6 +3231,8 @@ const AudioEngine=(function(){
         updateAgents(dt);
         updateWeather();
         updateSeason();
+        updateClouds();
+        updateBirds();
         drawWorld();
         autoSaveTimer+=dt;
         if(autoSaveTimer>3600){autoSaveTimer=0;autoSave();}
@@ -2061,7 +3240,6 @@ const AudioEngine=(function(){
     }
 
     function init(){
-        // Multiple resize calls to defeat layout race conditions
         resizeCanvas();
         requestAnimationFrame(resizeCanvas);
         setTimeout(resizeCanvas,100);
@@ -2079,7 +3257,6 @@ const AudioEngine=(function(){
         checkDailyReward();
         updateAutoSaveInfo();
 
-        // Try auto-load (safe)
         let loaded=false;
         try{loaded=loadAutoSave();}catch(e){loaded=false;}
 
@@ -2087,7 +3264,7 @@ const AudioEngine=(function(){
             log('📂 Auto-loaded','good');
             showToast('📂 Welcome back!',2500,true);
         } else {
-            log('Welcome to Waseem Sim City!','gold');
+            log('Welcome to Waseem Sim City HD!','gold');
             showToast('🏙️ Welcome, Mayor!',3000,true);
         }
 
